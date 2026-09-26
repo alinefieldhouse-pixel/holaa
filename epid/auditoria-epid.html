@@ -1,0 +1,801 @@
+<title>Auditoría EPID</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,500;8..60,700&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;600&display=swap">
+<style>
+:root{
+  --bg:#F3F6F7; --card:#FFFFFF; --ink:#15222A; --muted:#566871; --line:#DCE4E8; --soft:#EAF1F4;
+  --accent:#1F5F7A; --accent-ink:#FFFFFF; --accent-soft:#E1EEF3;
+  --err:#B3261E; --err-bg:#FCEDEC; --upd:#94580A; --upd-bg:#FBF1E1; --add:#2B7049; --add-bg:#E6F4EC;
+  --code-bg:#EEF3F5; --shadow:0 1px 2px rgba(21,34,42,.06),0 4px 16px rgba(21,34,42,.05);
+  --serif:"Source Serif 4",Georgia,"Times New Roman",serif;
+  --sans:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0F171B; --card:#162228; --ink:#E3ECEF; --muted:#9AB0BA; --line:#2A3B43; --soft:#1C2B32;
+    --accent:#6FB4D2; --accent-ink:#0C1A20; --accent-soft:#1B3441;
+    --err:#F2867E; --err-bg:#3A1D1B; --upd:#E7B35E; --upd-bg:#372911; --add:#7CCB9C; --add-bg:#16302A;
+    --code-bg:#1D2C33; --shadow:none; color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0F171B; --card:#162228; --ink:#E3ECEF; --muted:#9AB0BA; --line:#2A3B43; --soft:#1C2B32;
+  --accent:#6FB4D2; --accent-ink:#0C1A20; --accent-soft:#1B3441;
+  --err:#F2867E; --err-bg:#3A1D1B; --upd:#E7B35E; --upd-bg:#372911; --add:#7CCB9C; --add-bg:#16302A;
+  --code-bg:#1D2C33; --shadow:none; color-scheme:dark;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+@media (prefers-reduced-motion: reduce){html{scroll-behavior:auto}}
+body{background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:15.5px;line-height:1.6;padding-inline:16px;-webkit-font-smoothing:antialiased}
+header.top{max-width:1180px;margin:0 auto;padding-block:28px 18px;border-bottom:1px solid var(--line)}
+.eyebrow{font-size:.72rem;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);font-weight:600}
+h1{font-family:var(--serif);font-size:clamp(1.9rem,4vw,2.6rem);line-height:1.1;margin:.3rem 0 .5rem;text-wrap:balance}
+.sub{color:var(--muted);max-width:70ch;margin:0}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
+.chip{font-size:.78rem;font-weight:600;border:1px solid var(--line);background:var(--card);border-radius:999px;padding:3px 10px}
+.layout{display:grid;grid-template-columns:220px minmax(0,1fr);gap:28px;max-width:1180px;margin:22px auto 0}
+nav.toc{position:sticky;top:calc(env(safe-area-inset-top,0px) + 12px);align-self:start;max-height:calc(100vh - 24px);overflow:auto;font-size:.86rem}
+nav.toc .eyebrow{display:block;margin:0 0 8px 8px}
+nav.toc a{display:block;padding:5px 8px;border-radius:6px;color:var(--ink);text-decoration:none}
+nav.toc a:hover,nav.toc a:focus-visible{background:var(--accent-soft);color:var(--accent);outline:none}
+main{min-width:0;display:flex;flex-direction:column;gap:20px;padding-bottom:40px}
+section.s{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:22px clamp(16px,3vw,28px);box-shadow:var(--shadow);scroll-margin-top:12px}
+section.s>h2{font-family:var(--serif);font-size:1.45rem;margin:0 0 4px;line-height:1.2;text-wrap:balance;display:flex;gap:10px;align-items:baseline}
+section.s>h2 .n{font-family:var(--mono);font-size:.8rem;color:var(--muted);font-weight:600}
+.lead{color:var(--muted);margin:0 0 14px;max-width:75ch}
+h3{font-size:1.02rem;margin:22px 0 6px;color:var(--accent)}
+h4{font-size:.95rem;margin:14px 0 4px}
+p{margin:.45rem 0;max-width:78ch}
+ul,ol{margin:.35rem 0 .7rem;padding-left:1.2rem}
+li{margin:.18rem 0}
+.tw{overflow-x:auto;margin:.6rem 0;border:1px solid var(--line);border-radius:8px}
+table{width:100%;border-collapse:collapse;font-size:.88rem;min-width:560px}
+th,td{padding:7px 10px;text-align:left;vertical-align:top;border-bottom:1px solid var(--line)}
+th{background:var(--soft);font-weight:600;font-size:.8rem;letter-spacing:.02em}
+tr:last-child td{border-bottom:none}
+td.num,.mono{font-family:var(--mono);font-variant-numeric:tabular-nums}
+code,.d{font-family:var(--mono);font-size:.84em;background:var(--code-bg);border-radius:4px;padding:1px 5px;white-space:nowrap}
+.box{border-radius:8px;padding:10px 14px;margin:.7rem 0;background:var(--soft);border:1px solid var(--line)}
+.box .t{font-size:.72rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:2px}
+.box.err{background:var(--err-bg);border-color:transparent}.box.err .t{color:var(--err)}
+.box.upd{background:var(--upd-bg);border-color:transparent}.box.upd .t{color:var(--upd)}
+.box.add{background:var(--add-bg);border-color:transparent}.box.add .t{color:var(--add)}
+.tag{display:inline-block;font-size:.7rem;font-weight:700;letter-spacing:.04em;border-radius:4px;padding:1px 6px;margin-right:4px;vertical-align:1px;white-space:nowrap}
+.tag.err{background:var(--err-bg);color:var(--err)}
+.tag.upd{background:var(--upd-bg);color:var(--upd)}
+.tag.add{background:var(--add-bg);color:var(--add)}
+.tag.src{background:var(--accent-soft);color:var(--accent)}
+.legend{display:flex;flex-wrap:wrap;gap:10px 18px;font-size:.86rem;margin:.6rem 0}
+.audit{list-style:none;padding:0;margin:.4rem 0;display:flex;flex-direction:column;gap:8px}
+.audit li{border:1px solid var(--line);border-radius:8px;padding:9px 12px;margin:0}
+.audit .q{color:var(--muted);font-style:italic}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px}
+.flow{display:flex;flex-direction:column;align-items:stretch;gap:0;margin:.8rem 0}
+.fstep{border:1.5px solid var(--accent);border-radius:8px;padding:9px 13px;background:var(--card)}
+.fstep b{color:var(--accent)}
+.farrow{align-self:center;width:2px;height:16px;background:var(--accent);position:relative}
+.farrow::after{content:"";position:absolute;bottom:-5px;left:-4px;border:5px solid transparent;border-top-color:var(--accent)}
+.fsplit{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px}
+.fsplit .fstep{border-style:dashed}
+details.x{border:1px solid var(--line);border-radius:8px;margin:.5rem 0}
+details.x>summary{cursor:pointer;padding:9px 13px;font-weight:600;list-style:none}
+details.x>summary::-webkit-details-marker{display:none}
+details.x>summary::before{content:"+";display:inline-block;width:18px;color:var(--accent);font-weight:700}
+details.x[open]>summary::before{content:"−"}
+details.x>div{padding:0 14px 12px 31px}
+summary:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.quiz{display:flex;flex-direction:column;gap:12px}
+.qq{border:1px solid var(--line);border-radius:8px;padding:12px 14px}
+.qq .stem{font-weight:600;margin-bottom:6px}
+.qq .stem span{font-family:var(--mono);color:var(--muted);font-weight:600;margin-right:6px}
+.opt{display:block;width:100%;text-align:left;font:inherit;color:var(--ink);background:var(--card);border:1px solid var(--line);border-radius:6px;padding:8px 11px;margin:5px 0;cursor:pointer}
+.opt:hover:not(:disabled){border-color:var(--accent)}
+.opt.ok{background:var(--add-bg);border-color:var(--add);font-weight:600}
+.opt.no{background:var(--err-bg);border-color:var(--err)}
+.opt:disabled{cursor:default}
+.expl{margin-top:6px;font-size:.9rem;background:var(--soft);border-radius:6px;padding:8px 11px}
+.scorebar{position:sticky;bottom:calc(env(safe-area-inset-bottom,0px) + 8px);display:flex;justify-content:space-between;align-items:center;gap:10px;background:var(--accent);color:var(--accent-ink);border-radius:8px;padding:9px 14px;font-weight:600;margin-top:12px}
+.scorebar button{font:inherit;font-weight:600;background:var(--accent-ink);color:var(--accent);border:0;border-radius:6px;padding:4px 12px;cursor:pointer}
+.agenda{display:grid;grid-template-columns:auto 1fr;gap:6px 16px;font-size:.92rem}
+.agenda .h{font-family:var(--mono);font-weight:600;color:var(--accent);font-variant-numeric:tabular-nums}
+footer{color:var(--muted);font-size:.82rem;max-width:1180px;margin:0 auto;padding-block:10px 36px}
+@media (max-width:820px){.layout{grid-template-columns:1fr}nav.toc{position:static;max-height:none;border:1px solid var(--line);border-radius:10px;padding:10px;background:var(--card)}}
+</style>
+
+<header class="top">
+  <div class="eyebrow">Internado Medicina Interna · UMAG · Broncopulmonar, tema 4</div>
+  <h1>Enfermedades pulmonares intersticiales difusas: la nota del grupo, auditada</h1>
+  <p class="sub">Revisión línea por línea de la sección de Coni en el doc grupal, cruzada con tus cinco apuntes satélite y actualizada a las guías vigentes. Cada corrección indica de qué nota sale, para que cada una aporte lo suyo en la sesión.</p>
+  <div class="chips">
+    <span class="chip">ATS/ERS/JRS/ALAT 2018 · 2022 (FPI y FPP)</span>
+    <span class="chip">ATS/JRS/ALAT 2020 (NH)</span>
+    <span class="chip">ACR/CHEST 2023 (EPID-ETC)</span>
+    <span class="chip">ERS 2021 (sarcoidosis)</span>
+    <span class="chip">ESC/ERS 2022 (HP)</span>
+    <span class="chip">ISHLT 2021 (trasplante)</span>
+  </div>
+</header>
+
+<div class="layout">
+<nav class="toc" aria-label="Contenido">
+  <span class="eyebrow">Contenido</span>
+  <a href="#fuentes">1 · Qué notas hay</a>
+  <a href="#auditoria">2 · Auditoría de la nota grupal</a>
+  <a href="#satelites">3 · Auditoría de tus satélites</a>
+  <a href="#clasif">4 · Definición y clasificación</a>
+  <a href="#dx">5 · Algoritmo diagnóstico</a>
+  <a href="#tcar">6 · TCAR: patrones</a>
+  <a href="#fpi">7 · FPI</a>
+  <a href="#antifib">8 · Antifibróticos a fondo</a>
+  <a href="#pirf">8b · Pirfenidona en detalle</a>
+  <a href="#no">9 · Lo que NO se da</a>
+  <a href="#fpp">10 · Fibrosis progresiva y exacerbación</a>
+  <a href="#soporte">11 · O₂, rehabilitación, trasplante</a>
+  <a href="#nh">12 · Neumonitis por hipersensibilidad</a>
+  <a href="#etc">13 · EPID y conectivopatías</a>
+  <a href="#sarc">14 · Sarcoidosis</a>
+  <a href="#otras">15 · NII y EPID raras</a>
+  <a href="#neumo">16 · Neumoconiosis</a>
+  <a href="#drogas">17 · Neumotoxicidad por fármacos</a>
+  <a href="#perlas">18 · Perlas de examen oral</a>
+  <a href="#quiz">Autoevaluación</a>
+  <a href="#sesion">Sesión de estudio grupal</a>
+</nav>
+
+<main>
+
+<!-- 1 -->
+<section class="s" id="fuentes">
+  <h2><span class="n">01</span>Qué notas hay y qué aporta cada una</h2>
+  <p class="lead">Las dos páginas de Notion ("Enfermedad pulmonar difusa", Medinterna 2023, teórico y práctico) están <b>vacías</b>. La nota principal es la sección de Coni en el doc grupal. Tus apuntes en Drive sirven de satélites.</p>
+  <div class="tw"><table>
+    <tr><th>Nota</th><th>Dónde</th><th>Fuerte en</th><th>Débil en</th></tr>
+    <tr><td><b>4. Diagnóstico Inicial de EPD</b> (Coni)</td><td>Doc grupal "Apropiación cultural Examen MI"</td><td>Anamnesis de exposiciones, tabla de patrones TCAR, tabla de tratamiento por entidad, caso clínico oral de 15 preguntas</td><td>Criterio de restricción, monitoreo de fármacos, FPP, exacerbación, sarcoidosis, NH actualizada, neumoconiosis</td></tr>
+    <tr><td><b>44. Enfermedades intersticiales / Neumoconiosis / HTP / Cor pulmonale</b></td><td>Drive (resumen tipo EUNACOM, 2023)</td><td>Visión rápida de la EPID, la HTP y el cor pulmonale</td><td>Desactualizada: "FPI sin tratamiento", "biopsia casi siempre", PAPm &gt; 25</td></tr>
+    <tr><td><b>Fibrosis pulmonar idiopática</b> (Dra. V. Glasinovich, ACEM-UMAG)</td><td>Drive (.docx/.pdf, 2020)</td><td>Fenotipos evolutivos, criterios de alto riesgo, titulación de pirfenidona, factores que gatillan exacerbación</td><td>Clasificación TCAR de 2011, criterios de exacerbación de 2007, varios errores de fármacos</td></tr>
+    <tr><td><b>Neumonitis por hipersensibilidad</b> (R. Paz V.)</td><td>Drive (.pdf)</td><td>Formas clínicas, LBA, dosis de prednisona</td><td>Clasificación antigua (aguda/subaguda/crónica); falta la de 2020 (fibrótica / no fibrótica)</td></tr>
+    <tr><td><b>Neumoconiosis</b> (R. Paz V.)</td><td>Drive (.pdf)</td><td>Silicosis en Chile, isoniazida, "cáscara de huevo", silicoma</td><td>Marco legal chileno, fibrosis masiva progresiva, silicosis por piedra artificial</td></tr>
+    <tr><td><b>Daño intersticial y alveolar por drogas</b> (R. Paz V.)</td><td>Drive (.pdf)</td><td>Listado amplio de fármacos, criterio de reexposición</td><td>Inhibidores de checkpoint, amiodarona en detalle, manejo por grados</td></tr>
+  </table></div>
+  <div class="legend">
+    <span><span class="tag err">CORREGIR</span>error de contenido</span>
+    <span><span class="tag upd">ACTUALIZAR</span>correcto antes, desactualizado hoy</span>
+    <span><span class="tag add">AGREGAR</span>falta y lo preguntan</span>
+    <span><span class="tag src">FUENTE</span>nota de la que sale el aporte</span>
+  </div>
+  <p style="font-size:.88rem;color:var(--muted)">No encontré en tus fuentes la fecha del examen ni el calendario de turnos. Por eso el plan del final es una agenda para la sesión grupal y no un calendario diario.</p>
+</section>
+
+<!-- 2 -->
+<section class="s" id="auditoria">
+  <h2><span class="n">02</span>Auditoría de la nota grupal (Coni)</h2>
+  <p class="lead">Ordenadas por impacto en el examen. Cita textual en cursiva y, debajo, la corrección.</p>
+  <ul class="audit">
+    <li><span class="tag err">CORREGIR</span><span class="q">"patrón restrictivo en la espirometría (CVF &lt; 70%)"</span><br>
+      La restricción se confirma con <b>CPT &lt; LIN (percentil 5)</b> medida por pletismografía o dilución de helio. La espirometría solo la <i>sugiere</i>: CVF &lt; LIN con VEF₁/CVF normal o aumentada (en la EPID suele estar &gt; 0,8 por la mayor retracción elástica). El 70% no es un punto de corte de restricción; el número que se confunde es VEF₁/CVF &lt; 0,70, que define obstrucción. ERS/ATS 2021 recomienda usar LIN o z-score (z &lt; −1,645) en vez de porcentajes fijos.</li>
+    <li><span class="tag err">CORREGIR</span><span class="q">"Nintedanib: ralentiza el declive funcional (ENSIS, SENSCIS)"</span><br>
+      "ENSIS" no existe. Los ensayos son <b>SENSCIS</b> (ES-EPID, 2019), <b>INPULSIS-1/2</b> (FPI, 2014) e <b>INBUILD</b> (fibrosis progresiva no-FPI, 2019).</li>
+    <li><span class="tag err">CORREGIR</span><span class="q">"Medicamentos que usa, porque hay algunos que dan tos"</span><br>
+      Se pregunta por fármacos por su <b>neumotoxicidad</b> (neumonitis, fibrosis, NO, hemorragia alveolar), no por tos. El fármaco típico que da tos es el IECA, que no produce EPID. En la lista faltan <b>inhibidores de checkpoint</b> (anti-PD-1/PD-L1, anti-CTLA-4), bleomicina, busulfán, ciclofosfamida, anti-TNF, sales de oro y nitrosoureas (ver §17).</li>
+    <li><span class="tag err">CORREGIR</span><span class="q">"Causa desconocida (65%): Sarcoidosis, NII, asociadas a enfermedad reumatológica"</span><br>
+      En ATS/ERS la EPID asociada a conectivopatía (EPID-ETC) se clasifica como <b>EPID de causa conocida o asociada</b>, junto con fármacos y exposiciones. Los porcentajes 35/65 no tienen fuente y varían mucho entre series. Mejor no darlos como dato duro.</li>
+    <li><span class="tag err">CORREGIR</span><span class="q">"Patrón nodular: centrolobulillares o perilinfáticos → sarcoidosis, hipersensibilidad, neumoconiosis"</span><br>
+      Hay que separar la distribución, porque el diferencial cambia:
+      <ul>
+        <li><b>Perilinfático</b>: sarcoidosis, silicosis/neumoconiosis del carbón, linfangitis carcinomatosa.</li>
+        <li><b>Centrolobulillar</b>: NH, bronquiolitis respiratoria, infección endobronquial.</li>
+        <li><b>Aleatorio (random)</b>: TBC miliar, metástasis hematógenas.</li>
+      </ul></li>
+    <li><span class="tag add">AGREGAR</span><b>Fibrosis pulmonar progresiva (FPP)</b>. La guía de 2022 la define y recomienda <b>nintedanib</b> en la FPP no-FPI. La tabla la menciona solo para la NINE fibrótica. Criterios en §10.</li>
+    <li><span class="tag add">AGREGAR</span><b>Exacerbación aguda de FPI</b>: definición de 2016, manejo y la evidencia en contra de la ciclofosfamida (EXAFIP, 2020). No aparece en la nota. Ver §10.</li>
+    <li><span class="tag add">AGREGAR</span><b>Monitoreo y efectos adversos de los antifibróticos</b>: pruebas hepáticas, fotosensibilidad, diarrea, interacciones (CYP1A2, P-gp/CYP3A4), embarazo y alergia a soya/maní con nintedanib. La nota da dosis sin monitoreo. Ver §8.</li>
+    <li><span class="tag add">AGREGAR</span><b>Esclerosis sistémica: evitar prednisona ≥ 15 mg/día</b> por riesgo de <b>crisis renal esclerodérmica</b>. En ES-EPID no se usan corticoides crónicos (ACR 2023). Faltan también <b>tocilizumab</b> (focuSSced, aprobado por FDA para ES-EPID) y la meta de MMF de <code>3 g/día</code> (SLS II).</li>
+    <li><span class="tag upd">ACTUALIZAR</span><span class="q">"Artritis reumatoide: evitar metotrexato si se sospecha toxicidad"</span><br>
+      Correcto, pero con matiz: estudios de cohorte (Juge 2021; Kiely 2019) no muestran que el MTX aumente el riesgo de EPID-AR, incluso podría retrasarla. Con EPID-AR estable, el MTX no se suspende de rutina; se decide con reumatología. La neumonitis aguda por MTX existe (idiosincrática, primer año), pero es rara.</li>
+    <li><span class="tag upd">ACTUALIZAR</span><span class="q">"anti-neumocócica (PVC13/15 y PPSV23)"</span><br>
+      Hoy (ACIP 2024) se usa <b>VNC20 o VNC21 en dosis única</b>, o bien VNC15 seguida de VPN23. En Chile el PNI para adultos ≥ 65 años o con enfermedad crónica ha usado VNC13 + VPN23; revisar el calendario vigente. Agregar <b>VRS</b> (≥ 60 años con enfermedad pulmonar crónica), <b>herpes zóster recombinante</b> (sobre todo si habrá inmunosupresión) y dTpa.</li>
+    <li><span class="tag upd">ACTUALIZAR</span><b>NINE, NOC, NIA</b>: los tratamientos son razonables, pero la evidencia es de series y consenso, no de ensayos. En la NIA los pulsos de metilprednisolona no han demostrado beneficio claro: el pilar es el soporte ventilatorio protector.</li>
+    <li><span class="tag add">AGREGAR</span><b>Miopatías inflamatorias</b>: en anti-MDA5 con EPID rápidamente progresiva se usa terapia triple (pulsos de corticoide + tacrolimus + ciclofosfamida IV, o MMF). Mortalidad a 6 meses de hasta 50%. El síndrome antisintetasa (anti-Jo-1) da manos de mecánico, fiebre, Raynaud y artritis.</li>
+    <li><span class="tag add">AGREGAR</span><b>Sarcoidosis, NH y neumoconiosis</b> aparecen solo como nombres. Tienen secciones propias acá (§12, §14, §16).</li>
+    <li><span class="tag add">AGREGAR</span><b>Lavado broncoalveolar</b>: qué significa cada recuento celular (§5). Es pregunta clásica.</li>
+    <li><span class="tag upd">ACTUALIZAR</span>Terminología: <span class="q">"Hipersensibilidad pulmonar"</span> → <b>neumonitis por hipersensibilidad (NH)</b>. <span class="q">"FPI/UIIP"</span> → <b>FPI con patrón NIU (UIP)</b>. <span class="q">"Trabajadores en saunas (micobacterias)"</span> → el cuadro es el <b>"hot tub lung"</b>, una NH por <i>M. avium complex</i> de jacuzzis y tinas calientes.</li>
+    <li><span class="tag upd">ACTUALIZAR</span>En la PM6M la desaturación significativa es una <b>caída ≥ 4%</b> o una <b>SpO₂ nadir ≤ 88%</b>. Esta última es la que pronostica mortalidad en FPI e indica O₂ ambulatorio.</li>
+  </ul>
+  <div class="box add"><div class="t">Lo que la nota de Coni hace muy bien y hay que mantener</div>
+    La anamnesis de exposiciones (aves, plumas, humedad, leña), la separación fibrótica / no fibrótica, la tabla de patrones TCAR, la regla de "no dar corticoides empíricos desde APS" y el caso oral, que es muy realista. En el caso la conducta está bien: O₂ con meta de 92–96%, derivación a urgencias, estudio etiológico con panel autoinmune y resumen final.</div>
+</section>
+
+<!-- 3 -->
+<section class="s" id="satelites">
+  <h2><span class="n">03</span>Auditoría de tus notas satélite</h2>
+  <p class="lead">Lo que tienes que corregir antes de compartirlas con el grupo.</p>
+
+  <h3>"44. Enfermedades intersticiales / Neumoconiosis / HTP / COR pulmonar"</h3>
+  <ul class="audit">
+    <li><span class="tag err">CORREGIR</span><span class="q">"FPI: no tiene tto, solo sintomático"</span> → Desde 2014 hay antifibróticos (<b>pirfenidona, nintedanib</b>) que reducen la caída de la CVF en ~50% y las exacerbaciones. Desde 2025 se suma el <b>nerandomilast</b>. El trasplante sigue siendo la única terapia que cambia la historia natural.</li>
+    <li><span class="tag err">CORREGIR</span><span class="q">"Bp pulmonar: se termina haciendo casi siempre"</span> → Con TCAR de <b>NIU o NIU probable</b> y un contexto clínico compatible, el diagnóstico de FPI se hace <b>sin biopsia</b> en discusión multidisciplinaria (2022). La biopsia se reserva para patrón indeterminado o alternativo cuando cambiaría la conducta.</li>
+    <li><span class="tag upd">ACTUALIZAR</span><span class="q">"HTP: sistólica &gt; 30, media &gt; 25"</span> → ESC/ERS 2022: <b>PAPm &gt; 20 mmHg</b> en reposo por cateterismo derecho. Es precapilar si además la <b>PCP ≤ 15 mmHg y la RVP &gt; 2 UW</b>. La HTP asociada a EPID es del <b>grupo 3</b>.</li>
+    <li><span class="tag upd">ACTUALIZAR</span><span class="q">"BOOP, COOP"</span> → hoy se dice <b>neumonía organizada criptogénica (NOC/COP)</b>; el término BOOP se abandonó. <span class="q">"hidriocitosis X"</span> → <b>histiocitosis de células de Langerhans pulmonar</b>.</li>
+    <li><span class="tag add">AGREGAR</span>HTP en EPID: <b>treprostinil inhalado</b> (INCREASE, 2021) mejora la PM6M y la CVF. <b>Riociguat está contraindicado</b> en HTP asociada a NII (RISE-IIP: más mortalidad). Ambrisentán está contraindicado en FPI (ARTEMIS-IPF).</li>
+  </ul>
+
+  <h3>"Fibrosis pulmonar idiopática" (Dra. Glasinovich, 2020)</h3>
+  <ul class="audit">
+    <li><span class="tag err">CORREGIR</span><span class="q">"Nintedanib… no hay que reducir ni bajar la dosis"</span> → Falso. Ante efectos adversos o daño hepático leve se <b>reduce a 100 mg c/12 h</b> o se interrumpe y se reinicia. Es la estrategia estándar de la ficha técnica.</li>
+    <li><span class="tag err">CORREGIR</span><span class="q">"[Pirfenidona] es un antibiótico aceptado"</span> → Error de transcripción: es <b>antifibrótico</b>.</li>
+    <li><span class="tag err">CORREGIR</span><span class="q">"si el paciente tiene falla renal tiene que bajar la dosis"</span> → Pirfenidona <b>no requiere ajuste con ClCr 30–80</b> y <b>no se recomienda con ClCr &lt; 30 ni en diálisis</b>. Nintedanib no requiere ajuste renal leve-moderado; no está estudiado con ClCr &lt; 30.</li>
+    <li><span class="tag upd">ACTUALIZAR</span><span class="q">"patrón usual, posible e incompatible… consenso 2011 sigue en vigencia"</span> → Desde 2018 hay 4 categorías: <b>NIU, NIU probable, indeterminado y diagnóstico alternativo</b>. En 2022 la NIU probable se equipara a la NIU para el diagnóstico en el contexto adecuado (§6).</li>
+    <li><span class="tag upd">ACTUALIZAR</span>Criterios de exacerbación aguda: los de la nota son de 2007 y exigen excluir infección. La definición <b>revisada de 2016</b> incluye exacerbaciones <b>gatilladas</b> (infección, cirugía, aspiración) e <b>idiopáticas</b> (§10).</li>
+    <li><span class="tag upd">ACTUALIZAR</span><span class="q">"En 2011 hubo estudios… triterapia"</span> → Es <b>PANTHER-IPF, NEJM 2012</b>: prednisona + azatioprina + NAC aumentó la mortalidad y las hospitalizaciones. NAC sola no tuvo beneficio (2014). La guía de 2015 da recomendación fuerte en contra de la triterapia.</li>
+    <li><span class="tag upd">ACTUALIZAR</span>Umbrales <span class="q">"CVF &gt; 50% y DLCO &gt; 35%"</span> para iniciar antifibróticos → eran criterios de acceso de los ensayos y de algunos financiadores. Hoy se sugiere <b>iniciar al diagnóstico</b>, sin esperar deterioro ni exigir umbral.</li>
+    <li><span class="tag upd">ACTUALIZAR</span>"Tratar el reflujo": la guía de 2022 da recomendación condicional <b>en contra</b> de antiácidos y de cirugía antirreflujo <i>para mejorar el resultado respiratorio</i> en FPI. Se trata el RGE sintomático como tal, no como terapia de la fibrosis.</li>
+    <li><span class="tag err">CORREGIR</span><span class="q">"Hipertensión pulmonar: casi el 88%"</span> → Dato no sostenido. La HTP en FPI es de <b>~8–15% al diagnóstico y 30–50% en enfermedad avanzada</b> o en evaluación para trasplante.</li>
+    <li><span class="tag add">AGREGAR</span>Lo mejor de esta nota para el grupo: los <b>4 fenotipos evolutivos</b>, los criterios de <b>alto riesgo</b> (DLCO ≤ 40%, SpO₂ ≤ 88% en PM6M, caída de CVF ≥ 10% o DLCO ≥ 15% en 6 meses), los <b>gatillantes de exacerbación</b> (procedimientos, VM con volumen o FiO₂ altos, balance positivo) y el dato de que el 3% tiene Rx normal.</li>
+  </ul>
+
+  <h3>"Neumonitis por hipersensibilidad" (R. Paz)</h3>
+  <ul class="audit">
+    <li><span class="tag upd">ACTUALIZAR</span>Aguda/subaguda/crónica y criterios de Schuyler → clasificación ATS/JRS/ALAT 2020 en <b>NH no fibrótica y NH fibrótica</b>, que define el pronóstico y el tratamiento (§12).</li>
+    <li><span class="tag err">CORREGIR</span><span class="q">"52% de trabajadores de oficina pueden presentar pulmón del humidificador"</span> → Cifra no sostenida; es una prevalencia de brotes puntuales. No usarla en el examen.</li>
+    <li><span class="tag upd">ACTUALIZAR</span>Beclometasona inhalada 2000 µg: <b>sin evidencia</b>, no se recomienda. El cociente CD4/CD8 del LBA ya no se usa para diagnosticar; importa el <b>% de linfocitos</b>.</li>
+    <li><span class="tag add">AGREGAR</span>Lo mejor de esta nota: la tabla aguda/subaguda/crónica (útil para la clínica), el efecto "protector" del tabaco, las precipitinas como marcador de <i>exposición</i> y no de enfermedad, y el esquema de prednisona.</li>
+  </ul>
+
+  <h3>"Neumoconiosis" y "Daño intersticial por drogas" (R. Paz)</h3>
+  <ul class="audit">
+    <li><span class="tag add">AGREGAR</span>Silicosis en Chile: <b>Ley 16.744</b> (enfermedad profesional, notificación obligatoria, cobertura por mutualidad o ISL), <b>PLANESI</b> (Plan Nacional de Erradicación de la Silicosis) y asbesto <b>prohibido en Chile desde 2001</b>. Agregar también fibrosis masiva progresiva, síndrome de Caplan y la silicosis acelerada por <b>piedra artificial</b> (cuarzo de encimeras) en trabajadores jóvenes.</li>
+    <li><span class="tag err">CORREGIR</span><span class="q">"atopías celulares"</span> → <b>atipias celulares</b> (neumotoxicidad por bleomicina o busulfán).</li>
+    <li><span class="tag add">AGREGAR</span>Inhibidores de checkpoint con manejo por grados, y detalles de amiodarona y nitrofurantoína (§17). Recurso de consulta: <b>pneumotox.com</b>.</li>
+  </ul>
+</section>
+
+<!-- 4 -->
+<section class="s" id="clasif">
+  <h2><span class="n">04</span>Definición y clasificación</h2>
+  <p>Las EPID son un grupo de más de 200 entidades que comprometen el <b>intersticio alveolar</b> (entre epitelio y endotelio) y a menudo también alvéolos, vía aérea pequeña y vasos. Producen <b>inflamación, fibrosis o ambas</b>. La vía final común es la <b>restricción</b> (menor distensibilidad y volúmenes) y la <b>alteración de la difusión</b> con desigualdad V/Q, lo que da hipoxemia que empeora con el ejercicio.</p>
+  <h3>Clasificación ATS/ERS (2002, actualizada en 2013)</h3>
+  <div class="tw"><table>
+    <tr><th>Grupo</th><th>Entidades</th></tr>
+    <tr><td><b>Causa conocida o asociada</b></td><td>Conectivopatías (AR, ES, miopatías, Sjögren, LES, EMTC), fármacos, radiación, NH, neumoconiosis, vasculitis ANCA (NIU en MPO-ANCA)</td></tr>
+    <tr><td><b>Neumonías intersticiales idiopáticas (NII)</b></td><td><i>Fibrosantes crónicas:</i> FPI (NIU), NINE idiopática.<br><i>Relacionadas con tabaco:</i> BR-EPID, NID (descamativa).<br><i>Agudas/subagudas:</i> NOC, NIA.<br><i>Raras:</i> NIL (linfoide), fibroelastosis pleuroparenquimatosa (FEPP).<br><i>Inclasificable.</i></td></tr>
+    <tr><td><b>Granulomatosas</b></td><td>Sarcoidosis (también NH, beriliosis e infecciones granulomatosas en el diferencial)</td></tr>
+    <tr><td><b>Otras / raras</b></td><td>LAM, histiocitosis de Langerhans, proteinosis alveolar, neumonías eosinofílicas</td></tr>
+  </table></div>
+  <div class="grid2">
+    <div class="box"><div class="t">Enfoque moderno (2022)</div>Más que la etiqueta, importa el <b>comportamiento</b>: ¿es fibrosante? ¿progresa? Una EPID fibrosante de cualquier causa que progresa pese al tratamiento es una <b>FPP</b> y responde a antifibróticos.</div>
+    <div class="box"><div class="t">Anomalías intersticiales (ILA)</div>Hallazgo incidental en TC (Fleischner 2020) en personas sin sospecha de EPID, que afecta &gt; 5% de una zona pulmonar. Las <b>subpleurales fibróticas</b> progresan y aumentan la mortalidad: evaluar síntomas, pedir PFR y hacer seguimiento.</div>
+  </div>
+</section>
+
+<!-- 5 -->
+<section class="s" id="dx">
+  <h2><span class="n">05</span>Algoritmo diagnóstico</h2>
+  <p class="lead">Adaptado de ATS/ERS/JRS/ALAT 2018/2022. El eje es la TCAR más la discusión multidisciplinaria (DMD: neumólogo, radiólogo y patólogo, ± reumatólogo).</p>
+  <div class="flow" role="img" aria-label="Algoritmo diagnóstico de EPID">
+    <div class="fstep"><b>Sospecha:</b> disnea de esfuerzo progresiva, tos seca, crépitos tipo velcro, hipocratismo, Rx reticular, o ILA incidental en TC.</div>
+    <div class="farrow"></div>
+    <div class="fstep"><b>Anamnesis dirigida:</b> exposiciones (aves, plumas, hongos o humedad, jacuzzi, leña, sílice, asbesto, metales), fármacos, síntomas de conectivopatía, historia familiar (≥ 2 familiares = FPI familiar, pensar en telómeros), tabaco.</div>
+    <div class="farrow"></div>
+    <div class="fstep"><b>Estudio inicial:</b> TCAR sin contraste (cortes ≤ 1,25 mm, inspiración, espiración y prono), espirometría, volúmenes, DLCO, PM6M, serología autoinmune.</div>
+    <div class="farrow"></div>
+    <div class="fsplit">
+      <div class="fstep"><b>Causa identificada</b><br>Conectivopatía, NH, fármaco o neumoconiosis → tratar o retirar la causa.</div>
+      <div class="fstep"><b>TCAR NIU o NIU probable</b> sin causa → <b>FPI</b> por DMD, <i>sin biopsia</i>.</div>
+      <div class="fstep"><b>Indeterminado o alternativo</b> → LBA ± criobiopsia transbronquial o biopsia quirúrgica, y DMD.</div>
+    </div>
+    <div class="farrow"></div>
+    <div class="fstep"><b>Estadificar y seguir:</b> CVF y DLCO cada 3–6 meses, PM6M, ecocardiograma si se sospecha HTP. Buscar progresión (FPP).</div>
+  </div>
+
+  <h3>Laboratorio mínimo</h3>
+  <p>Hemograma, PCR/VHS, función renal y hepática, CK y aldolasa, <b>ANA</b> (IFI, Hep-2), <b>FR, anti-CCP</b>, <b>anti-Ro/SSA, anti-La/SSB</b>, <b>anti-Scl-70, anticentrómero</b>, anti-RNP. Según la sospecha: <b>panel de miositis</b> (anti-Jo-1, PL-7, PL-12, EJ, OJ, <b>anti-MDA5</b>, anti-Ro52), <b>ANCA</b> (MPO asociado a NIU), IgG específicas o precipitinas si se sospecha NH, BNP si hay que descartar IC.</p>
+  <div class="box"><div class="t">Detalle del examen</div>Los biomarcadores séricos (MMP-7, SP-D, KL-6) <b>no se recomiendan</b> para diagnosticar FPI (guía 2018). El clasificador genómico por broncoscopía no tiene recomendación formal (2022).</div>
+
+  <h3>Función pulmonar: cómo se lee en EPID</h3>
+  <div class="tw"><table>
+    <tr><th>Prueba</th><th>Hallazgo típico</th><th>Para qué sirve</th></tr>
+    <tr><td>Espirometría</td><td>CVF ↓, VEF₁ ↓ proporcional, <b>VEF₁/CVF normal o ↑</b></td><td>La CVF es el marcador de seguimiento: una caída ≥ 5% absoluta es relevante; ≥ 10% es de alto riesgo.</td></tr>
+    <tr><td>Volúmenes (pletismografía)</td><td><b>CPT &lt; LIN</b> confirma la restricción</td><td>Sin CPT no se puede afirmar restricción.</td></tr>
+    <tr><td>DLCO</td><td>↓ (corregir por Hb)</td><td>Es la más sensible y a veces la primera en caer. Una DLCO desproporcionadamente baja con volúmenes normales sugiere <b>fibrosis + enfisema</b> o HTP.</td></tr>
+    <tr><td>PM6M</td><td>Desaturación ≥ 4% o nadir ≤ 88%; distancia ↓</td><td>Pronóstico (nadir ≤ 88%, distancia &lt; 250 m) e indicación de O₂ ambulatorio.</td></tr>
+    <tr><td>GSA</td><td>Hipoxemia con hipocapnia y gradiente A-a ↑</td><td>La hipercapnia es tardía y ominosa.</td></tr>
+  </table></div>
+  <div class="box upd"><div class="t">Trampa del síndrome combinado (FPC)</div>En la fibrosis con enfisema los volúmenes y la CVF salen "pseudonormales" porque el enfisema compensa la restricción. Aun así la <b>DLCO está muy baja</b> y la HTP es frecuente. La caída de la CVF subestima la progresión. Dato de tu nota FPI.</div>
+
+  <h3>Lavado broncoalveolar: qué significa cada recuento</h3>
+  <div class="tw"><table>
+    <tr><th>Hallazgo en LBA</th><th>Sugiere</th></tr>
+    <tr><td>Linfocitos &gt; 30% (en NH fibrótica &gt; 20%)</td><td><b>NH</b>, sarcoidosis, NINE celular, NOC, fármacos</td></tr>
+    <tr><td>CD4/CD8 &gt; 3,5</td><td>Sarcoidosis (especificidad ~90%, sensibilidad baja)</td></tr>
+    <tr><td>Eosinófilos &gt; 25%</td><td><b>Neumonía eosinofílica</b> aguda o crónica, fármacos</td></tr>
+    <tr><td>Neutrófilos ↑</td><td>FPI, NIA/SDRA, infección, asbestosis</td></tr>
+    <tr><td>Líquido lechoso, PAS+</td><td><b>Proteinosis alveolar</b></td></tr>
+    <tr><td>Retorno progresivamente más hemorrágico, hemosiderófagos &gt; 20%</td><td><b>Hemorragia alveolar difusa</b></td></tr>
+    <tr><td>Células CD1a+ &gt; 5%</td><td>Histiocitosis de Langerhans</td></tr>
+    <tr><td>Macrófagos espumosos</td><td>Amiodarona (exposición, no prueba toxicidad)</td></tr>
+  </table></div>
+
+  <h3>Biopsia</h3>
+  <ul>
+    <li><b>Criobiopsia transbronquial</b>: alternativa aceptable a la quirúrgica en centros con experiencia (recomendación condicional, 2022). Riesgos: neumotórax ~10% y sangrado.</li>
+    <li><b>Biopsia quirúrgica por VATS</b>: rendimiento más alto, pero mortalidad ~1–2% electiva y mayor en urgencia. Puede <b>gatillar una exacerbación</b> (dato de tu nota FPI). Evitar si la CVF o la DLCO están muy bajas o hay HTP.</li>
+    <li>La biopsia transbronquial convencional sirve para sarcoidosis, NOC, infección y neoplasia, pero <b>no para diagnosticar NIU</b>.</li>
+  </ul>
+</section>
+
+<!-- 6 -->
+<section class="s" id="tcar">
+  <h2><span class="n">06</span>TCAR: patrones</h2>
+  <h3>Categorías de NIU para diagnosticar FPI (2018, ratificadas en 2022)</h3>
+  <div class="tw"><table>
+    <tr><th>Categoría</th><th>Hallazgos</th><th>Distribución</th><th>Conducta</th></tr>
+    <tr><td><b>NIU</b></td><td><b>Panal de abejas</b> ± bronquiectasias de tracción, reticulación</td><td>Subpleural y basal, a menudo heterogénea</td><td>FPI sin biopsia (si no hay causa)</td></tr>
+    <tr><td><b>NIU probable</b></td><td>Reticulación con bronquiectasias o bronquiolectasias de tracción periféricas, <b>sin panal</b></td><td>Subpleural y basal</td><td>2022: equivale a NIU en el contexto clínico adecuado</td></tr>
+    <tr><td><b>Indeterminado</b></td><td>Fibrosis subpleural-basal sutil, o rasgos que no sugieren ninguna etiología concreta</td><td>Variable</td><td>LBA ± biopsia, DMD</td></tr>
+    <tr><td><b>Alternativo</b></td><td>Quistes, <b>mosaico o signo de las tres densidades</b>, vidrio esmerilado predominante, micronódulos profusos o centrolobulillares, consolidación</td><td>Superior o media, <b>peribroncovascular</b>, con respeto subpleural</td><td>Buscar otro diagnóstico (NH, NINE, sarcoidosis…)</td></tr>
+  </table></div>
+  <h3>Otros patrones: lectura rápida</h3>
+  <div class="tw"><table>
+    <tr><th>Patrón</th><th>Rasgo clave</th><th>Piensa en</th></tr>
+    <tr><td>NINE</td><td>Vidrio esmerilado + reticulación fina basal, simétrica, <b>respeto subpleural</b></td><td>Conectivopatía (ES, miopatía), NH, fármacos, idiopática</td></tr>
+    <tr><td>Neumonía organizada</td><td>Consolidaciones periféricas o peribronquiales migratorias, <b>signo del halo invertido (atolón)</b></td><td>NOC, conectivopatía, fármacos, posinfecciosa, post-radioterapia</td></tr>
+    <tr><td>NH típica</td><td>Nódulos centrolobulillares en vidrio esmerilado + mosaico + <b>atrapamiento aéreo en espiración</b> ("tres densidades"), campos medios y superiores</td><td>NH</td></tr>
+    <tr><td>Sarcoidosis</td><td>Adenopatías hiliares bilaterales simétricas, nódulos <b>perilinfáticos</b>, fibrosis de lóbulos superiores</td><td>Sarcoidosis, silicosis</td></tr>
+    <tr><td>Quistes</td><td>Paredes finas y difusas en mujer (LAM) / quistes irregulares + nódulos en lóbulos superiores de fumador (HCL) / quistes escasos + Sjögren (NIL)</td><td>LAM, HCL, NIL, Birt-Hogg-Dubé</td></tr>
+    <tr><td>Empedrado (crazy paving)</td><td>Vidrio esmerilado + septos engrosados</td><td>Proteinosis alveolar (también edema, hemorragia, neumonía por <i>P. jirovecii</i>)</td></tr>
+    <tr><td>Placas pleurales calcificadas + fibrosis basal</td><td>—</td><td>Asbestosis</td></tr>
+  </table></div>
+</section>
+
+<!-- 7 -->
+<section class="s" id="fpi">
+  <h2><span class="n">07</span>Fibrosis pulmonar idiopática</h2>
+  <p><b>Definición (2022):</b> neumonía intersticial fibrosante crónica y progresiva, de causa desconocida, <b>limitada al pulmón</b>, con patrón NIU en TCAR o histología, en adultos, habitualmente &gt; 60 años. Es la NII más frecuente y la de peor pronóstico: mediana de sobrevida sin tratamiento de <b>3–5 años</b> y sobrevida a 5 años de ~20% (tu nota).</p>
+  <div class="grid2">
+    <div>
+      <h4>Factores de riesgo</h4>
+      <ul>
+        <li>Edad, sexo masculino, <b>tabaco</b> (&gt; 20 paquetes-año).</li>
+        <li>Polvos de metal o madera, agricultura, ganado.</li>
+        <li>RGE y microaspiración (asociación, no causa probada).</li>
+        <li>Genética: polimorfismo del promotor de <b>MUC5B</b> (el más frecuente), genes de <b>telómeros</b> (TERT, TERC, RTEL1, PARN) y surfactante (SFTPC, SFTPA2). ~5% son familiares.</li>
+      </ul>
+    </div>
+    <div>
+      <h4>Patogenia (modelo actual)</h4>
+      <p>Microlesiones repetidas del epitelio alveolar en un pulmón susceptible (edad, telómeros cortos) → reparación aberrante → activación de <b>TGF-β</b> → fibroblastos que se diferencian a <b>miofibroblastos</b> (<b>focos fibroblásticos</b> en la histología) → exceso de matriz. <b>No es una enfermedad inflamatoria</b>, por eso los corticoides no sirven y hacen daño.</p>
+    </div>
+  </div>
+  <div class="box"><div class="t">Detalle de telómeros</div>Si hay canas prematuras, citopenias, cirrosis criptogénica o mielodisplasia en el paciente o su familia, pensar en telomeropatía. Estos pacientes <b>toleran peor la inmunosupresión</b>, también la del postrasplante.</div>
+  <h3>Estadificación y pronóstico: índice GAP</h3>
+  <div class="tw"><table>
+    <tr><th>Variable</th><th>0</th><th>1</th><th>2</th><th>3</th></tr>
+    <tr><td><b>G</b>énero</td><td>Mujer</td><td>Hombre</td><td>—</td><td>—</td></tr>
+    <tr><td><b>A</b>ge (edad)</td><td class="num">≤ 60</td><td class="num">61–65</td><td class="num">&gt; 65</td><td>—</td></tr>
+    <tr><td><b>P</b>: CVF % pred.</td><td class="num">&gt; 75</td><td class="num">50–75</td><td class="num">&lt; 50</td><td>—</td></tr>
+    <tr><td><b>P</b>: DLCO % pred.</td><td class="num">&gt; 55</td><td class="num">36–55</td><td class="num">≤ 35</td><td>No puede realizarla</td></tr>
+  </table></div>
+  <p class="mono" style="font-size:.88rem">Estadio I: 0–3 pts (mortalidad a 1 año ~6%) · II: 4–5 (~16%) · III: 6–8 (~39%)</p>
+  <h3>Fenotipos evolutivos (de tu nota FPI)</h3>
+  <ul>
+    <li><b>Progresor lento</b> (la mayoría): caída de CVF de 130–210 mL/año sin tratamiento.</li>
+    <li><b>Progresor rápido</b> (10–15%): síntomas &lt; 6 meses al diagnóstico y caída de CVF &gt; 10% o de DLCO &gt; 15% en 6–12 meses.</li>
+    <li><b>Con exacerbaciones agudas</b>: 5–20% en su evolución, mortalidad hospitalaria ~50%.</li>
+    <li><b>Fibrosis + enfisema combinados</b>: ~90% fumadores, volúmenes pseudonormales, DLCO muy baja, HTP.</li>
+  </ul>
+  <h3>Comorbilidades que hay que buscar</h3>
+  <p>HTP, <b>cáncer pulmonar</b> (riesgo ×5; cuidado, la cirugía y la radioterapia gatillan exacerbaciones), RGE, apnea del sueño, enfermedad coronaria, TEP, depresión y ansiedad, desnutrición.</p>
+</section>
+
+<!-- 8 -->
+<section class="s" id="antifib">
+  <h2><span class="n">08</span>Antifibróticos a fondo</h2>
+  <p class="lead">Ninguno revierte la fibrosis. Todos <b>frenan la caída de la CVF (~50%)</b>. Se inician <b>al diagnóstico</b> y se mantienen mientras se toleren, también durante una exacerbación.</p>
+  <div class="tw"><table style="min-width:760px">
+    <tr><th style="width:17%"></th><th>Pirfenidona</th><th>Nintedanib</th><th>Nerandomilast <span class="tag upd">NUEVO</span></th></tr>
+    <tr><td><b>Mecanismo</b></td><td>Antifibrótico y antiinflamatorio pleiotrópico: ↓ TGF-β y TNF-α, ↓ proliferación de fibroblastos y síntesis de colágeno</td><td>Inhibidor de tirosina quinasa intracelular de los receptores de <b>PDGF, FGF y VEGF</b></td><td>Inhibidor preferencial de <b>PDE4B</b> (antifibrótico e inmunomodulador)</td></tr>
+    <tr><td><b>Indicación</b></td><td>FPI. En FPP no-FPI: evidencia insuficiente (2022, "investigar")</td><td>FPI, <b>FPP</b> (INBUILD) y <b>ES-EPID</b> (SENSCIS)</td><td>FPI (FIBRONEER-IPF). Datos positivos en FPP (FIBRONEER-ILD). Aprobado por FDA en 2025; <b>verificar disponibilidad en Chile</b></td></tr>
+    <tr><td><b>Dosis</b></td><td>Comprimidos de 267 mg, con comidas:<br>sem 1: <code>267 mg c/8 h</code><br>sem 2: <code>534 mg c/8 h</code><br>sem 3 en adelante: <code>801 mg c/8 h</code> = <b>2.403 mg/día</b><br>(En Chile también hay de 200 mg: meta 2.400 mg/día)</td><td><code>150 mg c/12 h</code> con comida, separado ~12 h<br><b>Reducir a <code>100 mg c/12 h</code></b> si hay intolerancia o Child-Pugh A</td><td><code>18 mg c/12 h</code> (dosis de los ensayos)</td></tr>
+    <tr><td><b>Efectos adversos</b></td><td>Náuseas, dispepsia, anorexia y baja de peso. <b>Fotosensibilidad y rash</b>. ↑ transaminasas. Fatiga, mareo</td><td><b>Diarrea (~60%)</b>, náuseas, vómitos, baja de peso. ↑ transaminasas. Sangrado, trombosis arterial, perforación GI (raros)</td><td><b>Diarrea</b> (la más frecuente), náuseas, baja de peso. Vigilar ánimo (efecto de clase PDE4)</td></tr>
+    <tr><td><b>Monitoreo</b></td><td>Pruebas hepáticas basales, <b>mensuales por 6 meses</b> y luego cada 3 meses. Peso</td><td>Pruebas hepáticas basales, <b>mensuales por 3 meses</b> y luego cada 3 meses. Peso, síntomas GI</td><td>Peso, síntomas GI, ánimo; pruebas hepáticas según ficha</td></tr>
+    <tr><td><b>Transaminasas</b></td><td>&gt; 3 y ≤ 5× LSN sin síntomas: reducir o suspender, controlar y retitular<br>&gt; 3× con síntomas o bilirrubina &gt; 2× LSN, o &gt; 5× LSN: <b>suspender definitivamente</b></td><td>&gt; 3× LSN: interrumpir o bajar a 100 mg, reintroducir al normalizar<br>&gt; 3× con signos de daño hepático o bilirrubina &gt; 2×, o &gt; 5×: <b>suspender</b></td><td>Según ficha técnica</td></tr>
+    <tr><td><b>Riñón</b></td><td>Sin ajuste con ClCr 30–80. <b>No recomendado con ClCr &lt; 30 ni en diálisis</b></td><td>Sin ajuste leve-moderado; no estudiado con ClCr &lt; 30</td><td>—</td></tr>
+    <tr><td><b>Hígado</b></td><td>Precaución en Child A-B. <b>Contraindicado en Child C</b></td><td>Child A: 100 mg c/12 h. <b>No recomendado en Child B-C</b></td><td>—</td></tr>
+    <tr><td><b>Interacciones</b></td><td>Metabolismo <b>CYP1A2</b>:<br>• <b>Fluvoxamina: contraindicada</b><br>• Ciprofloxacino 750 mg c/12 h: bajar a 1.602 mg/día<br>• <b>Tabaco</b> (inductor): exposición ~50% menor, dejar de fumar<br>• Evitar jugo de pomelo</td><td>Sustrato de <b>P-gp/CYP3A4</b>:<br>• Ketoconazol o eritromicina ↑ niveles: vigilar<br>• Rifampicina, carbamazepina, fenitoína o hierba de San Juan ↓ niveles: evitar<br>• Anticoagulación plena: más riesgo de sangrado (no es contraindicación absoluta)</td><td><b>La pirfenidona baja sus niveles</b> (en FIBRONEER el efecto fue menor con pirfenidona de base); combinable con nintedanib</td></tr>
+    <tr><td><b>Contraindicaciones y precauciones</b></td><td>Hepatopatía grave, ClCr &lt; 30, uso de fluvoxamina, angioedema previo</td><td><b>Embarazo</b> (teratógeno: anticoncepción hasta 3 meses después), <b>alergia a maní o soya</b> (la cápsula contiene lecitina de soya), sangrado activo, IAM reciente, cirugía abdominal reciente (cicatrización y perforación)</td><td>Embarazo; precaución con antecedentes psiquiátricos</td></tr>
+    <tr><td><b>Consejos al paciente</b></td><td>Tomar <b>con comida</b>. Si deja de tomarlo ≥ 14 días seguidos, <b>retitular desde la semana 1</b>. <b>Bloqueador FPS 50 y ropa</b>. Evitar sol directo. Dividir con cada comida</td><td>Loperamida desde la primera deposición líquida + hidratación. Tragar la cápsula entera con comida. Si olvida una dosis, no duplicar</td><td>Con o sin comida según ficha</td></tr>
+    <tr><td><b>Ensayos</b></td><td>CAPACITY 1-2 (2011), <b>ASCEND</b> (2014)</td><td><b>INPULSIS</b> 1-2 (2014), <b>INBUILD</b> (2019), <b>SENSCIS</b> (2019)</td><td>FIBRONEER-IPF y FIBRONEER-ILD (NEJM 2025)</td></tr>
+  </table></div>
+  <div class="box"><div class="t">¿Cuál elijo?</div>La eficacia es comparable. Se decide por el perfil del paciente: <b>anticoagulado o con cardiopatía isquémica</b> → preferir pirfenidona. <b>Exposición solar alta</b> (trabajo al aire libre) o uso de fluvoxamina → preferir nintedanib. <b>FPP no-FPI o ES-EPID</b> → nintedanib (es el que tiene evidencia). La combinación pirfenidona + nintedanib es segura pero suma efectos GI; solo en contexto de especialista.</div>
+  <div class="box upd"><div class="t">Cobertura en Chile</div>Tu nota FPI (2020) dice que el nintedanib no estaba al alcance de los pacientes y que se buscaba incluir la FPI en el GES. <b>Verificar con el docente la cobertura vigente</b> (GES o Ley Ricarte Soto) antes de afirmarlo en el examen.</div>
+</section>
+
+<!-- 8b -->
+<section class="s" id="pirf">
+  <h2><span class="n">08b</span>Pirfenidona en detalle</h2>
+  <p class="lead">Es el antifibrótico disponible en Chile según tu nota de Glasinovich. Aquí va todo lo que un examinador puede preguntar sobre él.</p>
+  <h3>Farmacología que explica las reglas de uso</h3>
+  <div class="tw"><table>
+    <tr><th>Propiedad</th><th>Dato</th><th>Consecuencia práctica</th></tr>
+    <tr><td>Absorción</td><td>Oral. La comida reduce la C<sub>máx</sub> ~50% sin cambiar mucho el AUC</td><td><b>Siempre con comida</b>: menos náuseas y mareo</td></tr>
+    <tr><td>Vida media</td><td>~2,5–3 h</td><td>Se da <b>cada 8 h</b>, con desayuno, almuerzo y cena</td></tr>
+    <tr><td>Metabolismo</td><td>Hepático, <b>70–80% por CYP1A2</b> (resto: 2C9, 2C19, 2D6, 2E1)</td><td>Interacciones con inhibidores e inductores de CYP1A2, incluido el tabaco</td></tr>
+    <tr><td>Eliminación</td><td>~80% renal como metabolito 5-carboxi-pirfenidona</td><td>El metabolito se acumula en la ERC: <b>evitar con ClCr &lt; 30 o en diálisis</b></td></tr>
+    <tr><td>Mecanismo</td><td>↓ TGF-β1, TNF-α e IL-1β; ↓ proliferación de fibroblastos y síntesis de colágeno; antioxidante</td><td>Por qué sirve en la fibrosis y no es un inmunosupresor clásico: no aumenta las infecciones</td></tr>
+  </table></div>
+
+  <h3>Evidencia</h3>
+  <ul>
+    <li><b>CAPACITY 004/006</b> (Lancet 2011): beneficio en CVF en un ensayo; el otro fue neutro.</li>
+    <li><b>ASCEND</b> (NEJM 2014): a 52 semanas, reduce en ~48% la proporción de pacientes con caída de CVF ≥ 10% o muerte. Caída media de CVF de 235 vs 428 mL con placebo. Mejora la sobrevida libre de progresión.</li>
+    <li><b>Análisis agrupado</b> de CAPACITY y ASCEND: ↓ mortalidad por todas las causas a 1 año (HR ~0,52; objetivo secundario).</li>
+    <li><b>Fuera de la FPI</b>: EPID inclasificable (Maher, 2020) y RELIEF (2021) con señales positivas pero metodología limitada. En 2022 la guía no la recomienda en FPP ("investigar"); para FPP el fármaco es nintedanib.</li>
+  </ul>
+
+  <h3>Esquema de titulación</h3>
+  <div class="tw"><table>
+    <tr><th>Semana</th><th>267 mg</th><th>Dosis diaria</th></tr>
+    <tr><td class="num">1 (días 1–7)</td><td>1 comprimido c/8 h</td><td class="num">801 mg</td></tr>
+    <tr><td class="num">2 (días 8–14)</td><td>2 comprimidos c/8 h</td><td class="num">1.602 mg</td></tr>
+    <tr><td class="num">3 en adelante</td><td>3 comprimidos c/8 h (o 1 de 801 mg c/8 h)</td><td class="num">2.403 mg</td></tr>
+  </table></div>
+  <p style="font-size:.9rem">Presentación de 200 mg (según tu nota, disponible en Chile): subir hasta 4 comprimidos c/8 h = 2.400 mg/día. Dosis máxima: 2.403 mg/día. <b>Si suspende ≥ 14 días seguidos, retitular desde la semana 1.</b> Si suspende &lt; 14 días, reiniciar con la dosis previa.</p>
+
+  <h3>Efectos adversos y cómo se manejan</h3>
+  <div class="tw"><table style="min-width:680px">
+    <tr><th>Efecto (frecuencia aprox.)</th><th>Manejo</th></tr>
+    <tr><td><b>Náuseas</b> (~35%), dispepsia, anorexia, baja de peso, ERGE</td><td>Tomar con comida completa y no solo con líquido. Bajar temporalmente a 1–2 comprimidos c/8 h y re-escalar en 1–2 semanas. IBP o procinético. Controlar el peso</td></tr>
+    <tr><td><b>Fotosensibilidad y rash</b> (~25–30%)</td><td>Educar antes de iniciar: <b>FPS ≥ 50 con protección UVA y UVB</b>, ropa manga larga y sombrero, evitar el sol de 10 a 16 h y las camas solares. Evitar otros fotosensibilizantes (tetraciclinas, tiazidas, amiodarona). Rash leve: bajar la dosis 7–14 días. Rash grave (ampollas, DRESS, Stevens-Johnson): <b>suspender definitivamente</b></td></tr>
+    <tr><td><b>↑ Transaminasas</b> (~3–4% con &gt; 3× LSN)</td><td>Pruebas hepáticas basales, mensuales por 6 meses y luego cada 3 meses. Conducta según umbral (tabla de §8). Aparece sobre todo en los primeros 6 meses; es reversible al suspender</td></tr>
+    <tr><td>Fatiga, mareo, insomnio, disgeusia</td><td>Dividir la dosis con las comidas. Suele mejorar en semanas</td></tr>
+  </table></div>
+
+  <h3>Interacciones (CYP1A2)</h3>
+  <div class="grid2">
+    <div class="box err"><div class="t">Aumentan los niveles</div>
+      <b>Fluvoxamina</b> (inhibidor potente): contraindicada; suspender antes de iniciar.<br>
+      <b>Ciprofloxacino</b> 750 mg c/12 h: reducir a <code>1.602 mg/día</code> (534 mg c/8 h).<br>
+      Amiodarona, propafenona y otros inhibidores moderados: precaución.<br>
+      Jugo de pomelo: evitar.</div>
+    <div class="box upd"><div class="t">Disminuyen los niveles</div>
+      <b>Tabaco</b>: exposición ~50% menor. Otra razón para dejar de fumar.<br>
+      Rifampicina y otros inductores potentes: evitar.<br>
+      Omeprazol (inductor débil de CYP1A2): efecto teórico, no contraindica su uso.</div>
+  </div>
+
+  <h3>Contraindicaciones</h3>
+  <p>Hipersensibilidad o angioedema previo, <b>insuficiencia hepática grave (Child C)</b>, <b>ClCr &lt; 30 o diálisis</b>, uso concomitante de fluvoxamina. En embarazo y lactancia los datos son limitados: evitar.</p>
+
+  <h3>Checklist de control (cada visita)</h3>
+  <ul>
+    <li>Pruebas hepáticas: mensuales hasta el mes 6, luego cada 3 meses.</li>
+    <li>Peso y apetito; piel (quemaduras, rash); síntomas GI.</li>
+    <li>Revisar fármacos nuevos (antibióticos, antidepresivos) buscando interacciones CYP1A2.</li>
+    <li>Tabaquismo.</li>
+    <li>CVF y DLCO cada 3–6 meses: la meta es <b>frenar la caída</b>, no mejorar la función. Si la CVF sigue cayendo, no es fracaso automático: evaluar trasplante o ensayo clínico y conversar el cambio a nintedanib.</li>
+  </ul>
+  <div class="box"><div class="t">Frase para el examen oral</div>"Pirfenidona 801 mg c/8 h con comidas, tras titular en 2 semanas. Controlo pruebas hepáticas mensuales por 6 meses, indico fotoprotección FPS 50, reviso interacciones por CYP1A2 (fluvoxamina contraindicada, ciprofloxacino obliga a reducir) y pido dejar el tabaco, que baja sus niveles. No la uso con ClCr &lt; 30 ni en Child C. Frena la caída de la CVF; no revierte la fibrosis."</div>
+</section>
+
+<!-- 9 -->
+<section class="s" id="no">
+  <h2><span class="n">09</span>Lo que NO se da en FPI</h2>
+  <p class="lead">Aparece en el examen como alternativa trampa.</p>
+  <div class="tw"><table>
+    <tr><th>Fármaco</th><th>Evidencia</th><th>Recomendación</th></tr>
+    <tr><td>Prednisona + azatioprina + NAC</td><td>PANTHER-IPF (NEJM 2012): ↑ mortalidad y hospitalizaciones</td><td><b>Fuerte en contra</b></td></tr>
+    <tr><td>Corticoides crónicos en monoterapia</td><td>Sin beneficio, con toxicidad</td><td>En contra (sí se usan en la exacerbación aguda)</td></tr>
+    <tr><td>NAC sola</td><td>PANTHER, 2014: sin beneficio</td><td>Condicional en contra</td></tr>
+    <tr><td>Warfarina como antifibrótico</td><td>ACE-IPF (2012): ↑ mortalidad</td><td><b>Fuerte en contra</b> (sí se anticoagula si hay TEP o FA)</td></tr>
+    <tr><td>Ambrisentán</td><td>ARTEMIS-IPF: ↑ progresión y hospitalización</td><td><b>Fuerte en contra</b></td></tr>
+    <tr><td>Riociguat (HTP en NII)</td><td>RISE-IIP: ↑ mortalidad</td><td>Contraindicado</td></tr>
+    <tr><td>Imatinib, bosentán, macitentán</td><td>Sin beneficio</td><td>En contra</td></tr>
+    <tr><td>Sildenafil</td><td>STEP-IPF / INSTAGE: sin beneficio en el objetivo primario</td><td>Condicional en contra</td></tr>
+    <tr><td>Antiácidos o funduplicatura para mejorar la fibrosis</td><td>Sin beneficio en CVF</td><td>Condicional en contra (2022)</td></tr>
+  </table></div>
+</section>
+
+<!-- 10 -->
+<section class="s" id="fpp">
+  <h2><span class="n">10</span>Fibrosis pulmonar progresiva y exacerbación aguda</h2>
+  <h3>FPP: definición ATS/ERS/JRS/ALAT 2022</h3>
+  <p>En un paciente con EPID <b>distinta de FPI</b> y evidencia radiológica de fibrosis, se requieren <b>≥ 2 de 3 criterios en el último año</b>, sin otra explicación:</p>
+  <ol>
+    <li><b>Empeoramiento de síntomas</b> respiratorios.</li>
+    <li><b>Progresión funcional</b>: caída absoluta de <b>CVF ≥ 5%</b> del predicho, o de <b>DLCO ≥ 10%</b> (corregida por Hb), en 1 año.</li>
+    <li><b>Progresión radiológica</b>: más bronquiectasias o bronquiolectasias de tracción, vidrio esmerilado nuevo con bronquiectasias de tracción, reticulación nueva, más panal, o más pérdida de volumen lobar.</li>
+  </ol>
+  <p>Tratamiento: <b>nintedanib 150 mg c/12 h</b> (recomendación condicional, INBUILD: −57% en la caída de CVF), <b>sumado</b> a la terapia de la enfermedad de base. No reemplaza la inmunosupresión de una conectivopatía.</p>
+  <div class="box"><div class="t">Qué EPID pueden evolucionar a FPP</div>NH fibrótica, EPID-AR, ES-EPID, NINE fibrótica, EPID inclasificable, sarcoidosis estadio IV, neumoconiosis, EPID por fármacos. Entre 18% y 32% de las EPID no-FPI se vuelven progresivas.</div>
+
+  <h3>Exacerbación aguda de FPI (definición revisada de 2016)</h3>
+  <ol>
+    <li>Diagnóstico previo o concurrente de FPI.</li>
+    <li>Empeoramiento o aparición de disnea, típicamente en <b>&lt; 1 mes</b>.</li>
+    <li>TC con <b>vidrio esmerilado o consolidación bilateral nuevos</b> sobre el patrón NIU.</li>
+    <li>Deterioro no explicado por <b>insuficiencia cardíaca ni sobrecarga de volumen</b>.</li>
+  </ol>
+  <p>Se clasifica en <b>gatillada</b> (infección, post-procedimiento o cirugía, aspiración, fármaco) o <b>idiopática</b>. La definición de 2007, que usa tu nota, exigía excluir infección; ya no.</p>
+  <div class="grid2">
+    <div>
+      <h4>Estudio en urgencias</h4>
+      <p>TC de tórax (angio-TC si se sospecha TEP), ecocardiograma o BNP, panel viral o PCR respiratoria, hemocultivos, procalcitonina, y LBA solo si se tolera (riesgo).</p>
+    </div>
+    <div>
+      <h4>Manejo</h4>
+      <ul>
+        <li><b>O₂</b> y soporte. Cánula nasal de alto flujo preferible. La VM invasiva tiene mortalidad &gt; 80%: solo como <b>puente a trasplante</b>. Discutir adecuación del esfuerzo terapéutico.</li>
+        <li><b>Corticoides</b>: se usan (práctica habitual con evidencia de baja calidad; guía 2015, condicional a favor), p. ej. <code>metilprednisolona 500–1000 mg/día IV × 3 días</code> y luego prednisona 0,5–1 mg/kg en descenso.</li>
+        <li><b>Antibióticos empíricos</b> de amplio espectro hasta descartar infección.</li>
+        <li><b>No usar ciclofosfamida</b> (EXAFIP, 2020: ↑ mortalidad a 3 meses).</li>
+        <li><b>Mantener el antifibrótico</b>, tromboprofilaxis, balance hídrico neutro o negativo.</li>
+      </ul>
+    </div>
+  </div>
+  <div class="box err"><div class="t">Mortalidad</div>~50% intrahospitalaria. Es la primera causa de muerte en FPI. Los antifibróticos (sobre todo nintedanib en INPULSIS) <b>reducen el riesgo</b> de exacerbación.</div>
+</section>
+
+<!-- 11 -->
+<section class="s" id="soporte">
+  <h2><span class="n">11</span>O₂, rehabilitación, síntomas y trasplante</h2>
+  <div class="tw"><table>
+    <tr><th>Medida</th><th>Detalle</th></tr>
+    <tr><td><b>O₂ crónico domiciliario</b> (ATS 2020)</td><td>En reposo: <b>PaO₂ ≤ 55 mmHg o SpO₂ ≤ 88%</b>, o PaO₂ 56–59 con cor pulmonale o Hto &gt; 55%. Meta SpO₂ ≥ 90%. En EPID con desaturación grave al esfuerzo: <b>O₂ ambulatorio</b> (condicional), que mejora disnea y distancia caminada. Contraindicado fumar con O₂.</td></tr>
+    <tr><td><b>Rehabilitación pulmonar</b></td><td>Mejora PM6M, disnea y calidad de vida (condicional a favor). Beneficio mayor en enfermedad leve-moderada.</td></tr>
+    <tr><td><b>Vacunas</b></td><td>Influenza anual, neumococo (VNC20 o VNC21 única, o VNC15 + VPN23; en Chile, calendario PNI), COVID-19, <b>VRS</b> (≥ 60 años con enfermedad pulmonar crónica), herpes zóster recombinante, dTpa.</td></tr>
+    <tr><td><b>Tos</b></td><td>Buscar RGE, goteo nasal posterior o IECA. <b>Morfina de liberación lenta 5 mg c/12 h</b> (PACIFY-COUGH, 2023: ↓ 39% la frecuencia de tos en FPI). Sin terapia aprobada específica.</td></tr>
+    <tr><td><b>Disnea refractaria y paliativos</b></td><td>Opioides en dosis bajas, O₂, ventilador de mano, manejo de ansiedad. Integrar cuidados paliativos temprano.</td></tr>
+    <tr><td><b>HTP grupo 3</b></td><td>Ecocardiograma si hay sospecha (DLCO desproporcionada, desaturación marcada, BNP ↑). <b>Treprostinil inhalado</b> (INCREASE) en HTP por EPID confirmada por cateterismo. Riociguat y ambrisentán contraindicados (§9).</td></tr>
+    <tr><td><b>Dejar de fumar</b></td><td>Obligatorio. Además, el tabaco reduce los niveles de pirfenidona.</td></tr>
+  </table></div>
+  <h3>Trasplante pulmonar (ISHLT 2021)</h3>
+  <div class="grid2">
+    <div class="box"><div class="t">Derivar (evaluación)</div>
+      <ul>
+        <li>NIU o NINE fibrótica, <b>desde el diagnóstico</b> y cualquiera sea la función.</li>
+        <li>CVF &lt; 80% o DLCO &lt; 40%.</li>
+        <li>Caída relativa de CVF ≥ 10%, de DLCO ≥ 15%, o de CVF ≥ 5% con síntomas o progresión radiológica en 2 años.</li>
+        <li>Requerimiento de O₂ (aunque sea al esfuerzo).</li>
+        <li>EPID inflamatoria que progresa pese al tratamiento.</li>
+      </ul></div>
+    <div class="box"><div class="t">Enlistar</div>
+      <ul>
+        <li>Caída de CVF ≥ 10% en 6 meses (≥ 5% con progresión radiológica).</li>
+        <li>Caída de DLCO ≥ 10% en 6 meses.</li>
+        <li>SpO₂ &lt; 88% o distancia &lt; 250 m en PM6M, o caída &gt; 50 m en 6 meses.</li>
+        <li>HTP.</li>
+        <li>Hospitalización por deterioro respiratorio, neumotórax o exacerbación.</li>
+      </ul></div>
+  </div>
+</section>
+
+<!-- 12 -->
+<section class="s" id="nh">
+  <h2><span class="n">12</span>Neumonitis por hipersensibilidad (ATS/JRS/ALAT 2020)</h2>
+  <p>Enfermedad inmunomediada (hipersensibilidad tipo III y IV) por inhalación repetida de antígenos en personas susceptibles. Se conocen más de 200 antígenos: aves (pulmón del criador de aves), heno húmedo o actinomicetos (pulmón del granjero), hongos de humedad domiciliaria, <i>M. avium</i> de jacuzzi (hot tub lung), isocianatos y humidificadores. <b>En ~50% de las NH fibróticas no se identifica el antígeno</b>, y eso empeora el pronóstico.</p>
+  <div class="tw"><table>
+    <tr><th></th><th>NH no fibrótica</th><th>NH fibrótica</th></tr>
+    <tr><td>Equivale a</td><td>Antigua aguda / subaguda</td><td>Antigua crónica</td></tr>
+    <tr><td>TCAR</td><td>Nódulos centrolobulillares en vidrio esmerilado, mosaico, atrapamiento aéreo, campos medios y superiores</td><td>Lo anterior + reticulación, bronquiectasias de tracción ± panal (a veces patrón NIU o NINE). Distribución axial y craneocaudal difusa, <b>respeto relativo de las bases</b></td></tr>
+    <tr><td>LBA</td><td>Linfocitosis &gt; 30%, a menudo &gt; 50%</td><td>Linfocitosis &gt; 20% apoya</td></tr>
+    <tr><td>Histología</td><td>Bronquiolitis celular, neumonitis intersticial linfocítica, <b>granulomas pequeños mal formados</b></td><td>Fibrosis bronquiolocéntrica ± granulomas</td></tr>
+    <tr><td>Pronóstico</td><td>Bueno si se retira la exposición</td><td>Parecido a FPI si hay panal</td></tr>
+  </table></div>
+  <p><b>Diagnóstico</b> por DMD integrando exposición identificada, TCAR típica y LBA con linfocitosis. Con los tres, el diagnóstico es de alta confianza sin biopsia. Las IgG específicas o precipitinas demuestran <b>sensibilización</b>, no enfermedad.</p>
+  <h3>Tratamiento</h3>
+  <ol>
+    <li><b>Evitar el antígeno</b> (el pilar). Retirar aves, plumas, humedad y humidificadores; limpieza profesional del hogar. En la no fibrótica suele bastar.</li>
+    <li><b>NH no fibrótica sintomática</b>: prednisona <code>0,5 mg/kg/día</code> (40–60 mg) por 1–4 semanas, con descenso en 4–8 semanas (tu nota). Aguda grave: 0,5–1 mg/kg.</li>
+    <li><b>NH fibrótica</b> con progresión: prednisona 0,5 mg/kg por 4 semanas y descenso a mantención + ahorrador de corticoides (<b>MMF 1–1,5 g c/12 h</b> o azatioprina 1–2 mg/kg). Reevaluar a los 6 meses y mantener solo si hay mejoría objetiva.</li>
+    <li>Si cumple FPP: <b>nintedanib</b>. Trasplante en enfermedad terminal.</li>
+  </ol>
+</section>
+
+<!-- 13 -->
+<section class="s" id="etc">
+  <h2><span class="n">13</span>EPID asociada a conectivopatías (ACR/CHEST 2023)</h2>
+  <p><b>Tamizaje</b> con <b>PFR (espirometría + DLCO) y TCAR</b> en pacientes con ES, miopatía inflamatoria, EMTC, AR con factores de riesgo (hombre, tabaco, edad, FR o anti-CCP altos) y Sjögren. Monitoreo con PFR cada 3–12 meses según la enfermedad. La radiografía y la PM6M <b>no sirven</b> como tamizaje.</p>
+  <div class="tw"><table style="min-width:720px">
+    <tr><th>Enfermedad</th><th>Patrón típico</th><th>Primera línea</th><th>Alternativas</th><th>Evitar o vigilar</th></tr>
+    <tr><td><b>Esclerosis sistémica</b></td><td>NINE (fibrótica)</td><td><b>MMF</b> con meta de <code>1,5 g c/12 h</code> (3 g/día), titulado desde 500 mg c/12 h (SLS II)</td><td>Tocilizumab <code>162 mg SC semanal</code> (focuSSced), rituximab (RECITAL), ciclofosfamida IV <code>500–750 mg/m² mensual × 6</code> (SLS I), nintedanib si hay progresión (SENSCIS)</td><td><b>Prednisona ≥ 15 mg/día: crisis renal esclerodérmica</b>. Vigilar PA y creatinina. Evitar corticoides crónicos</td></tr>
+    <tr><td><b>Artritis reumatoide</b></td><td><b>NIU</b> (la única conectivopatía donde predomina)</td><td>MMF, rituximab</td><td>Azatioprina, ciclofosfamida, nintedanib si hay FPP. Pirfenidona en NIU-AR (TRAIL1, fase 2)</td><td>MTX: no contraindicado de rutina (ver §2). Leflunomida y anti-TNF: casos de empeoramiento, decidir con reumatología</td></tr>
+    <tr><td><b>Miopatías / antisintetasa</b></td><td>NINE, NO, NINE + NO</td><td>Corticoides + <b>MMF</b> (o azatioprina)</td><td>Tacrolimus o ciclosporina, rituximab, IgIV, ciclofosfamida</td><td><b>Anti-MDA5 con EPID rápidamente progresiva</b>: triple terapia desde el inicio, alta mortalidad</td></tr>
+    <tr><td><b>Sjögren</b></td><td>NINE, NIL (quistes)</td><td>MMF</td><td>Azatioprina, rituximab</td><td>Descartar linfoma MALT</td></tr>
+    <tr><td><b>LES</b></td><td>Raro en EPID crónica. Más frecuentes: neumonitis lúpica aguda, hemorragia alveolar, pulmón encogido</td><td>MMF o azatioprina + corticoides según actividad</td><td>Ciclofosfamida y rituximab en la hemorragia alveolar</td><td>Serositis, TEP (antifosfolípidos)</td></tr>
+    <tr><td><b>EMTC</b></td><td>NINE</td><td>MMF</td><td>Como ES</td><td>HTP</td></tr>
+  </table></div>
+  <div class="box"><div class="t">Fármacos: detalles que se preguntan</div>
+    <b>MMF</b>: diarrea, leucopenia, infecciones. Hemograma y pruebas hepáticas cada 2 semanas el primer mes, mensual por 3 meses y luego cada 3 meses. <b>Teratógeno</b>: anticoncepción obligatoria y suspender 6 semanas antes de embarazar.<br>
+    <b>Azatioprina</b>: medir <b>TPMT</b> (± NUDT15) antes de iniciar. Interacción grave con <b>alopurinol</b> (reducir la dosis al 25% o evitar). Mielosupresión, hepatotoxicidad, pancreatitis.<br>
+    <b>Ciclofosfamida</b>: cistitis hemorrágica (hidratación ± MESNA), mielosupresión, infertilidad, cáncer vesical. Profilaxis de <i>P. jirovecii</i>.<br>
+    <b>Rituximab</b>: tamizaje de VHB (reactivación), hipogammaglobulinemia. Vacunar antes.<br>
+    <b>Cualquier inmunosupresión + prednisona ≥ 20 mg por &gt; 4 semanas</b>: profilaxis de <i>P. jirovecii</i> con cotrimoxazol, protección ósea (calcio, vitamina D ± bisfosfonato), glicemia, tamizaje de TBC latente (PPD o IGRA) y VHB/VHC/VIH.</div>
+</section>
+
+<!-- 14 -->
+<section class="s" id="sarc">
+  <h2><span class="n">14</span>Sarcoidosis (ATS 2020 diagnóstico, ERS 2021 tratamiento)</h2>
+  <p>Enfermedad multisistémica de causa desconocida con <b>granulomas no necrotizantes</b>. El pulmón y los ganglios intratorácicos se comprometen en &gt; 90%. Afecta sobre todo a adultos de 20–40 años.</p>
+  <p><b>Diagnóstico</b> por 3 pilares: (1) cuadro clínico-radiológico compatible, (2) granulomas no necrotizantes en la biopsia (EBUS-TBNA de ganglios, que es la de mayor rendimiento), (3) exclusión de otras causas (TBC, hongos, beriliosis, linfoma, NH, fármacos como los inhibidores de checkpoint). <b>No requiere biopsia</b> el síndrome de Löfgren, el de Heerfordt ni las adenopatías hiliares bilaterales asintomáticas.</p>
+  <div class="grid2">
+    <div class="box"><div class="t">Síndrome de Löfgren</div>Eritema nodoso + adenopatías hiliares bilaterales + poliartralgia o periartritis de tobillos ± fiebre. <b>Remite espontáneamente en &gt; 90%</b>. Tratamiento: AINE.</div>
+    <div class="box"><div class="t">Heerfordt</div>Fiebre + parotiditis + uveítis anterior + parálisis facial.</div>
+  </div>
+  <div class="tw"><table>
+    <tr><th>Estadio de Scadding (Rx)</th><th>Hallazgo</th><th>Remisión espontánea</th></tr>
+    <tr><td class="num">0</td><td>Rx normal</td><td>—</td></tr>
+    <tr><td class="num">I</td><td>Adenopatías hiliares bilaterales</td><td>55–90%</td></tr>
+    <tr><td class="num">II</td><td>Adenopatías + infiltrados</td><td>40–70%</td></tr>
+    <tr><td class="num">III</td><td>Infiltrados sin adenopatías</td><td>10–20%</td></tr>
+    <tr><td class="num">IV</td><td>Fibrosis (lóbulos superiores)</td><td>0%</td></tr>
+  </table></div>
+  <p><b>Evaluación basal de órganos</b>: calcemia (hipercalcemia por calcitriol producido en el granuloma), creatinina, fosfatasa alcalina, hemograma, orina, <b>ECG</b> (bloqueos: sospecha cardíaca, que se estudia con RM cardíaca o PET), <b>examen oftalmológico</b>. La <b>ECA sérica</b> tiene baja sensibilidad y especificidad: no diagnostica ni excluye.</p>
+  <h3>Tratamiento (ERS 2021)</h3>
+  <ul>
+    <li><b>Cuándo tratar</b>: riesgo de muerte o daño permanente (cardíaca, neurológica, ocular, renal, hipercalcemia) o compromiso pulmonar con síntomas o deterioro funcional. Estadio I asintomático: observar.</li>
+    <li><b>1ª línea</b>: prednisona <code>20–40 mg/día</code> (ERS sugiere partir con ~20 mg), bajar a ≤ 10 mg en 3–6 meses. Duración total de 6–12 meses.</li>
+    <li><b>2ª línea (ahorrador de corticoides)</b>: <b>metotrexato</b> <code>10–15 mg/semana</code> + ácido fólico (control hepático y renal, teratógeno). Alternativas: azatioprina, leflunomida, MMF.</li>
+    <li><b>3ª línea</b>: <b>infliximab</b> <code>3–5 mg/kg</code> (descartar TBC latente e insuficiencia cardíaca grave).</li>
+    <li>Cardíaca: corticoides ± MTX, con evaluación de DAI por riesgo de muerte súbita. Fatiga y neuropatía de fibra fina son frecuentes y se pasan por alto.</li>
+  </ul>
+</section>
+
+<!-- 15 -->
+<section class="s" id="otras">
+  <h2><span class="n">15</span>Otras neumonías intersticiales idiopáticas y EPID raras</h2>
+  <div class="tw"><table style="min-width:720px">
+    <tr><th>Entidad</th><th>Perfil</th><th>TCAR</th><th>Tratamiento</th><th>Pronóstico</th></tr>
+    <tr><td><b>NINE idiopática</b></td><td>50 años, mujer, no fumadora. Descartar siempre conectivopatía (a menudo es la primera manifestación)</td><td>Vidrio esmerilado + reticulación basal simétrica, respeto subpleural</td><td>Prednisona 0,5–1 mg/kg ± MMF o azatioprina. Nintedanib si hay FPP</td><td>Celular: bueno. Fibrótica: sobrevida a 5 años ~70–80%</td></tr>
+    <tr><td><b>NOC</b></td><td>Cuadro subagudo tipo "neumonía que no responde a antibióticos", con fiebre, tos y disnea en 2–3 meses</td><td>Consolidaciones periféricas migratorias, halo invertido</td><td>Prednisona <code>0,75–1 mg/kg/día</code> (máx. 60 mg) por 4–8 semanas y descenso en <b>6–12 meses</b> en total</td><td>Muy bueno. <b>Recaída en hasta 50%</b> al bajar la dosis; responde a reintroducir</td></tr>
+    <tr><td><b>NIA</b> (Hamman-Rich)</td><td>SDRA idiopático tras pródromo viral, en personas previamente sanas</td><td>Vidrio esmerilado y consolidación difusos (daño alveolar difuso)</td><td>Soporte con VM protectora. Pulsos de corticoides sin beneficio demostrado</td><td>Mortalidad &gt; 50%</td></tr>
+    <tr><td><b>BR-EPID / NID</b></td><td>Fumadores activos, 30–50 años</td><td>Nódulos centrolobulillares en vidrio esmerilado (BR) / vidrio esmerilado basal periférico (NID)</td><td><b>Dejar de fumar</b> (± corticoides en NID)</td><td>Bueno si deja de fumar</td></tr>
+    <tr><td><b>HCL pulmonar</b></td><td>Fumador joven</td><td>Nódulos y quistes de formas raras en lóbulos superiores, <b>respeta los ángulos costofrénicos</b></td><td>Dejar de fumar. Cladribina si progresa. Mutación BRAF V600E en algunos</td><td>Variable. Neumotórax, HTP</td></tr>
+    <tr><td><b>LAM</b></td><td>Mujer en edad fértil, esporádica o con esclerosis tuberosa. Neumotórax recurrente, quilotórax, angiomiolipomas renales</td><td>Quistes redondos de pared fina difusos</td><td><b>Sirolimus</b> (MILES, 2011; nivel valle 5–15 ng/mL) si VEF₁ &lt; 70% o hay deterioro. Evitar estrógenos. <b>VEGF-D ≥ 800 pg/mL</b> + TC típica es diagnóstico</td><td>Estabiliza la función con sirolimus</td></tr>
+    <tr><td><b>Proteinosis alveolar</b></td><td>Autoinmune en &gt; 90% (anticuerpos anti-GM-CSF)</td><td><b>Empedrado</b> (crazy paving)</td><td><b>Lavado pulmonar total</b>. GM-CSF inhalado (molgramostim, IMPALA-2)</td><td>Bueno. Riesgo de <i>Nocardia</i></td></tr>
+    <tr><td><b>Neumonía eosinofílica crónica</b></td><td>Mujer, asma previa</td><td>Consolidación periférica: "negativo del edema pulmonar"</td><td>Prednisona 0,5 mg/kg. Respuesta en días; recaídas frecuentes</td><td>Bueno</td></tr>
+  </table></div>
+</section>
+
+<!-- 16 -->
+<section class="s" id="neumo">
+  <h2><span class="n">16</span>Neumoconiosis</h2>
+  <p>Fibrosis por inhalación de polvo inorgánico. <b>Solo tiene tratamiento preventivo y sintomático</b> (tu nota). La TCAR es más sensible que la Rx; la Rx se lee con la <b>clasificación ILO</b>.</p>
+  <div class="tw"><table style="min-width:680px">
+    <tr><th></th><th>Silicosis</th><th>Asbestosis</th><th>Neumoconiosis del carbón</th></tr>
+    <tr><td>Exposición</td><td>Minería (cobre en Chile), canteras, fundición, arenado, vidrio, loza, <b>piedra artificial</b></td><td>Construcción, astilleros, frenos, aislantes, fibrocemento (asbesto prohibido en Chile desde 2001)</td><td>Minas de carbón (en Magallanes: Pecket, Isla Riesco)</td></tr>
+    <tr><td>Latencia</td><td>Crónica &gt; 10 años. Acelerada 5–10 años. Aguda (silicoproteinosis) &lt; 5 años</td><td>15–20 años para asbestosis; <b>20–40 años para mesotelioma</b></td><td>&gt; 10 años</td></tr>
+    <tr><td>Imagen</td><td>Nódulos de 1–10 mm en <b>lóbulos superiores</b> y posteriores, calcificación ganglionar en <b>cáscara de huevo</b>, fibrosis masiva progresiva (conglomerados &gt; 1 cm), silicoma</td><td>Fibrosis reticular <b>basal subpleural</b> (tipo NIU) + <b>placas pleurales calcificadas</b> (marcador de exposición)</td><td>Nódulos en lóbulos superiores, fibrosis masiva progresiva</td></tr>
+    <tr><td>Complicaciones</td><td><b>TBC</b> (riesgo ×3, cavitación rápida), cáncer pulmonar (IARC grupo 1), autoinmunidad (ES, AR), ERC</td><td><b>Cáncer pulmonar</b> (sinergia multiplicativa con el tabaco), <b>mesotelioma</b>, derrame pleural benigno, atelectasia redonda</td><td>Síndrome de Caplan (AR + nódulos), EPOC</td></tr>
+    <tr><td>Clave de manejo</td><td>Retiro de exposición, dejar de fumar. <b>Tamizaje de TBC latente</b>: PPD ≥ 10 mm o IGRA → isoniazida (o rifapentina). En Chile, notificar por Ley 16.744</td><td>Retiro de exposición, dejar de fumar, vigilancia de cáncer. Antifibrótico si hay FPP</td><td>Retiro de exposición</td></tr>
+  </table></div>
+  <div class="box"><div class="t">Chile y Magallanes</div>La silicosis es la neumoconiosis más frecuente en Chile. Es <b>enfermedad profesional</b> (Ley 16.744): se notifica, la cubre la mutualidad o el ISL y otorga derecho a pensión por invalidez. El <b>PLANESI</b> busca erradicarla. Otras neumoconiosis benignas: siderosis en soldadores y estañosis.</div>
+</section>
+
+<!-- 17 -->
+<section class="s" id="drogas">
+  <h2><span class="n">17</span>Neumotoxicidad por fármacos</h2>
+  <p>El diagnóstico es de <b>exclusión</b> y requiere relación temporal. La mejoría al suspender apoya la sospecha y la reaparición al reexponer la confirma (tu nota). La biopsia sirve más para excluir otras causas que para confirmar. Consultar <b>pneumotox.com</b>.</p>
+  <div class="tw"><table style="min-width:720px">
+    <tr><th>Fármaco</th><th>Patrón y factores de riesgo</th><th>Clave</th></tr>
+    <tr><td><b>Amiodarona</b></td><td>NINE, NO, fibrosis. Riesgo con dosis &gt; 400 mg/día, uso &gt; 2 meses, edad avanzada, enfermedad pulmonar previa, cirugía o FiO₂ alta</td><td>TC con <b>alta atenuación</b> en pulmón, hígado y bazo (yodo). LBA con macrófagos espumosos. Vida media larga (semanas a meses): suspender + prednisona 40–60 mg por meses. Incidencia 1–5%</td></tr>
+    <tr><td><b>Nitrofurantoína</b></td><td><i>Aguda</i> (días a semanas): fiebre, eosinofilia, infiltrados; hipersensibilidad reversible. <i>Crónica</i> (meses a años de profilaxis): NINE o fibrosis</td><td>Mujer mayor con profilaxis crónica de ITU</td></tr>
+    <tr><td><b>Metotrexato</b></td><td>Neumonitis por hipersensibilidad aguda o subaguda, idiosincrática, en el <b>primer año</b>; no depende de la dosis</td><td>Excluir <i>P. jirovecii</i>. Suspender + corticoides. No reintroducir</td></tr>
+    <tr><td><b>Bleomicina</b></td><td>Dosis acumulada &gt; 400 U, edad, ERC, radioterapia, <b>FiO₂ alta</b> (incluso años después)</td><td>Usar la FiO₂ mínima en anestesia. Vigilar DLCO</td></tr>
+    <tr><td><b>Inhibidores de checkpoint</b> (nivolumab, pembrolizumab, atezolizumab, ipilimumab)</td><td>Neumonitis en 3–5%, más con terapia combinada y cáncer pulmonar. Patrones NO, NINE o NH</td><td>Manejo por grado CTCAE (abajo)</td></tr>
+    <tr><td>Otros</td><td>Busulfán, ciclofosfamida, carmustina, gemcitabina, taxanos, ITK (EGFR), anti-TNF, rituximab, sales de oro, radioterapia</td><td>La radiación potencia la toxicidad de muchos</td></tr>
+  </table></div>
+  <h3>Neumonitis por inhibidores de checkpoint (ASCO/NCCN)</h3>
+  <div class="tw"><table>
+    <tr><th>Grado</th><th>Definición</th><th>Conducta</th></tr>
+    <tr><td class="num">1</td><td>Solo imagen, &lt; 25% del pulmón, asintomático</td><td>Considerar suspender el inhibidor. Control con imagen en 3–4 semanas</td></tr>
+    <tr><td class="num">2</td><td>Síntomas leves, 25–50% del pulmón, limita las AVD instrumentales</td><td><b>Suspender</b>. Prednisona <code>1–2 mg/kg/día</code> y descenso en 4–6 semanas. Descartar infección. Reintroducir si baja a grado ≤ 1</td></tr>
+    <tr><td class="num">3–4</td><td>Síntomas graves, &gt; 50% del pulmón, O₂ o riesgo vital</td><td><b>Suspender definitivamente</b>. Hospitalizar. Metilprednisolona <code>1–2 mg/kg/día IV</code>. Sin mejoría en 48 h: <b>infliximab 5 mg/kg</b>, MMF, IgIV o ciclofosfamida</td></tr>
+  </table></div>
+</section>
+
+<!-- 18 -->
+<section class="s" id="perlas">
+  <h2><span class="n">18</span>Perlas de examen oral</h2>
+  <ul>
+    <li>Adulto mayor con <b>crépitos tipo velcro</b> bibasales + tos seca + disnea progresiva: FPI hasta demostrar lo contrario. La Rx puede ser normal: pedir <b>TCAR</b>.</li>
+    <li>Un <b>síntoma extrapulmonar</b> (Raynaud, rigidez matinal, ojo o boca seca, manos de mecánico, debilidad proximal, rash) saca a la FPI del diagnóstico (limitada al pulmón) y obliga a buscar conectivopatía.</li>
+    <li><b>Fibrótica que progresa = antifibrótico</b>. Inflamatoria = inmunosupresión. Una FPI no se trata con corticoides salvo en la exacerbación.</li>
+    <li>VEF₁/CVF <b>normal o alta</b> + CPT baja + DLCO baja es el trío de la EPID.</li>
+    <li><b>Hipocratismo</b>: frecuente en FPI y asbestosis, raro en sarcoidosis y NH. Su presencia en sarcoidosis sugiere otro diagnóstico.</li>
+    <li>La NH afecta más a <b>no fumadores</b>. La HCL, la BR-EPID y la NID afectan a <b>fumadores</b>.</li>
+    <li>Silicosis + <b>cavitación rápida</b>: TBC.</li>
+    <li>Paciente con FPI que empeora en &lt; 1 mes con vidrio esmerilado nuevo: exacerbación aguda. <b>Descartar ICC y TEP</b>, dar corticoides y antibióticos, no ciclofosfamida y mantener el antifibrótico.</li>
+    <li>Monitoreo que se pregunta: <b>pirfenidona</b> con pruebas hepáticas mensuales por 6 meses + bloqueador solar; <b>nintedanib</b> con pruebas hepáticas mensuales por 3 meses + loperamida, y no en embarazo.</li>
+    <li>ES-EPID: <b>MMF</b> y <b>nunca prednisona ≥ 15 mg/día</b> por la crisis renal.</li>
+    <li>Toda EPID, frente al trasplante: derivar temprano, <b>no esperar a que empeore</b>.</li>
+  </ul>
+</section>
+
+<!-- QUIZ -->
+<section class="s" id="quiz">
+  <h2><span class="n">✓</span>Autoevaluación</h2>
+  <p class="lead">18 preguntas. Haz clic en una alternativa para ver la corrección.</p>
+  <div class="quiz" id="quizBox"></div>
+  <div class="scorebar"><span id="scoreTxt">Puntaje: 0 / 0</span><button type="button" id="resetBtn">Reiniciar</button></div>
+</section>
+
+<!-- SESION -->
+<section class="s" id="sesion">
+  <h2><span class="n">⏱</span>Sesión de estudio grupal (≈ 2 h 30)</h2>
+  <p class="lead">No encontré la fecha del examen en tus fuentes. Esta agenda sirve para una sesión; repite el quiz 48 h después.</p>
+  <div class="agenda">
+    <div class="h">0:00–0:15</div><div><b>Coni</b> presenta su nota (definición, anamnesis, patrones). El grupo marca en su copia las 5 correcciones rojas de §2.</div>
+    <div class="h">0:15–0:35</div><div>Función pulmonar y LBA (§5). Ejercicio: interpretar las PFR del caso de Coni (CVF 64%, VEF₁/CVF 0,84, DLCO 48%, desaturación 93→83%).</div>
+    <div class="h">0:35–1:05</div><div><b>Aline</b> presenta FPI desde la nota de Glasinovich corregida (§3, §7), TCAR (§6) y la tabla de antifibróticos (§8). Cada integrante dicta de memoria una fila de la tabla.</div>
+    <div class="h">1:05–1:20</div><div>Lo que NO se da (§9) + FPP y exacerbación (§10). Pregunta de examinador: "¿por qué no ciclofosfamida?".</div>
+    <div class="h">1:20–1:30</div><div>Pausa.</div>
+    <div class="h">1:30–1:55</div><div>NH (§12) y conectivopatías (§13). Rehacer el caso de Coni desde la pregunta 13 con la clasificación 2020 de NH.</div>
+    <div class="h">1:55–2:10</div><div>Sarcoidosis, neumoconiosis y fármacos (§14, §16, §17): ronda rápida de 1 pregunta por persona.</div>
+    <div class="h">2:10–2:30</div><div>Quiz en voz alta. Quien falla explica la respuesta correcta.</div>
+  </div>
+</section>
+
+</main>
+</div>
+
+<footer>
+  <b>Fuentes integradas.</b> Doc grupal "Apropiación cultural Examen Medicina Interna", sección 4 (Coni). Drive de Aline: "44. Enfermedades intersticiales / Neumoconiosis / HTP / COR Pulmonar"; "Fibrosis pulmonar idiopática" (Dra. V. Glasinovich, ACEM-UMAG); "Neumonitis por hipersensibilidad", "Neumoconiosis" y "Daño intersticial y alveolar por drogas" (R. Paz V.). Notion Medinterna 2023, "Enfermedad pulmonar difusa" (páginas vacías).<br>
+  <b>Guías.</b> Raghu G et al. ATS/ERS/JRS/ALAT IPF 2018 y IPF (update) and PPF 2022 (AJRCCM). Collard HR et al. Acute exacerbation of IPF, 2016. Raghu G et al. HP guideline 2020; Hamblin M et al. ERS HP 2022. Johnson SR et al. ACR/CHEST SARD-ILD screening and treatment 2023. Crouser ED et al. ATS sarcoidosis dx 2020; Baughman RP et al. ERS sarcoidosis tx 2021. Humbert M et al. ESC/ERS PH 2022. Leard LE et al. ISHLT 2021. Jacobs SS et al. ATS home oxygen 2020. Hatabu H et al. Fleischner ILA 2020. Stanojevic S et al. ERS/ATS interpretación PFR 2021. Schneider BJ et al. ASCO irAE 2021.<br>
+  <b>Ensayos.</b> CAPACITY, ASCEND, INPULSIS, INBUILD, SENSCIS, FIBRONEER-IPF/ILD, PANTHER-IPF, ACE-IPF, ARTEMIS-IPF, RISE-IIP, INCREASE, EXAFIP, SLS I/II, focuSSced, MILES, PACIFY-COUGH.<br>
+  Material de estudio personal. Las dosis son de referencia de guías y fichas técnicas: verifica con la ficha local y correlaciona siempre con la clínica.
+</footer>
+
+<script>
+const QUESTIONS=[
+{q:"Espirometría con CVF 62%, VEF₁ 66%, VEF₁/CVF 0,86. ¿Qué afirmación es correcta?",o:["Confirma un patrón restrictivo","Sugiere restricción; se confirma con CPT < LIN en pletismografía","Es un patrón obstructivo porque el VEF₁ está bajo","Es normal porque VEF₁/CVF > 0,70"],a:1,e:"La espirometría solo sugiere restricción. La confirmación requiere CPT < LIN. Por eso el criterio \"CVF < 70%\" de la nota grupal es incorrecto."},
+{q:"Hombre de 72 años, exfumador. TCAR con reticulación subpleural basal y bronquiectasias de tracción periféricas, sin panal. Sin exposiciones ni conectivopatía. Según la guía de 2022:",o:["Requiere biopsia quirúrgica obligatoria","Es NIU probable y permite diagnosticar FPI por DMD sin biopsia","Es patrón indeterminado","Es diagnóstico alternativo: pensar en NH"],a:1,e:"En 2022 la NIU probable se equipara a la NIU para el diagnóstico de FPI en el contexto clínico adecuado, sin biopsia."},
+{q:"¿Cuál combinación se demostró dañina en FPI (PANTHER-IPF)?",o:["Pirfenidona + nintedanib","Prednisona + azatioprina + N-acetilcisteína","Nintedanib + MMF","Sildenafil + O₂"],a:1,e:"PANTHER (NEJM 2012) mostró más mortalidad y hospitalizaciones con la triterapia. Tu nota dice 2011."},
+{q:"Paciente con FPI inicia pirfenidona. ¿Cuál es la indicación correcta?",o:["Tomarla en ayunas","Pruebas hepáticas mensuales por 6 meses y fotoprotección FPS 50","Reducir la dosis si ClCr es 50 mL/min","Puede seguir fumando sin cambios en la eficacia"],a:1,e:"Con comidas; pruebas hepáticas mensuales por 6 meses y luego trimestrales; fotoprotección. Sin ajuste con ClCr 30–80. El tabaco (inductor de CYP1A2) baja los niveles ~50%."},
+{q:"Paciente en pirfenidona con depresión. ¿Qué antidepresivo está contraindicado?",o:["Sertralina","Fluvoxamina","Escitalopram","Mirtazapina"],a:1,e:"La fluvoxamina es un inhibidor potente de CYP1A2 y aumenta mucho los niveles de pirfenidona."},
+{q:"Con nintedanib, ¿cuál de estas NO es una precaución o contraindicación relevante?",o:["Embarazo","Alergia a maní o soya","Anticoagulación plena","Exposición solar intensa"],a:3,e:"La fotosensibilidad es de la pirfenidona. El nintedanib es teratógeno, la cápsula contiene lecitina de soya y aumenta el riesgo de sangrado."},
+{q:"Paciente en nintedanib 150 mg c/12 h con diarrea persistente pese a loperamida. Conducta:",o:["Suspender definitivamente","Reducir a 100 mg c/12 h o interrumpir y reintroducir","Cambiar a 300 mg c/24 h","No se puede ajustar la dosis"],a:1,e:"La ficha técnica permite reducir a 100 mg c/12 h o interrumpir temporalmente. Tu nota FPI dice que no se reduce: es un error."},
+{q:"Según ATS/ERS 2022, ¿cuál NO es un criterio de fibrosis pulmonar progresiva?",o:["Caída absoluta de CVF ≥ 5% en 1 año","Caída de DLCO ≥ 10% en 1 año","Aumento de bronquiectasias de tracción en la TC","Aumento de la PCR"],a:3,e:"Se requieren 2 de 3 en un año: síntomas, progresión funcional (CVF ≥ 5% o DLCO ≥ 10%) y progresión radiológica."},
+{q:"Paciente con FPI y vidrio esmerilado bilateral nuevo en 2 semanas, sin ICC ni TEP. ¿Qué evitar?",o:["Corticoides en pulsos","Antibióticos empíricos","Ciclofosfamida IV","Mantener el antifibrótico"],a:2,e:"EXAFIP (2020): la ciclofosfamida agregada a los corticoides aumentó la mortalidad a 3 meses."},
+{q:"Mujer con esclerosis sistémica y NINE fibrótica. ¿Cuál es la conducta más adecuada?",o:["Prednisona 1 mg/kg por 3 meses","MMF con meta de 3 g/día; evitar prednisona ≥ 15 mg/día","Pirfenidona en monoterapia","Metotrexato"],a:1,e:"En ES-EPID el MMF es de primera línea (SLS II). Los corticoides en dosis altas se asocian a crisis renal esclerodérmica."},
+{q:"¿Qué hallazgo del LBA apoya más una neumonitis por hipersensibilidad no fibrótica?",o:["Neutrofilia","Linfocitosis > 30%","Eosinófilos > 25%","Líquido lechoso PAS+"],a:1,e:"La linfocitosis > 30% (a menudo > 50%) apoya NH. Eosinófilos > 25%: neumonía eosinofílica. PAS+: proteinosis."},
+{q:"Signo de las tres densidades (mosaico + atrapamiento aéreo) en campos medios y superiores sugiere:",o:["FPI","NH","Sarcoidosis","Asbestosis"],a:1,e:"Es típico de NH y es un rasgo de \"diagnóstico alternativo\" frente a la NIU."},
+{q:"Mujer de 32 años con eritema nodoso, adenopatías hiliares bilaterales y artritis de tobillos. Conducta:",o:["EBUS con biopsia obligatoria","Prednisona 40 mg","AINE y observación; no requiere biopsia","Metotrexato"],a:2,e:"Es un síndrome de Löfgren: remite espontáneamente en > 90% y el diagnóstico es clínico."},
+{q:"Minero con silicosis y PPD de 14 mm, sin TBC activa. Conducta:",o:["Nada, la silicosis no se asocia a TBC","Tratar la TBC latente (isoniazida)","Tratamiento antituberculoso de 4 fármacos","Prednisona"],a:1,e:"La silicosis triplica el riesgo de TBC. Con PPD ≥ 10 mm o IGRA positivo se trata la infección latente."},
+{q:"¿Cuál es FALSO sobre la HTP asociada a EPID?",o:["Es del grupo 3","Se define con PAPm > 20 mmHg por cateterismo derecho","Riociguat está recomendado","El treprostinil inhalado mejora la distancia caminada (INCREASE)"],a:2,e:"RISE-IIP: el riociguat aumentó la mortalidad en HTP-NII. La definición 2022 es PAPm > 20 mmHg."},
+{q:"Paciente con melanoma en pembrolizumab, con tos y vidrio esmerilado en el 40% del pulmón, sin O₂. Conducta:",o:["Continuar y controlar en 3 meses","Suspender y dar prednisona 1–2 mg/kg/día","Suspender definitivamente y dar infliximab de inmediato","Solo antibióticos"],a:1,e:"Grado 2: suspender el inhibidor, dar prednisona 1–2 mg/kg con descenso en 4–6 semanas y reintroducir si baja a grado ≤ 1."},
+{q:"¿Cuál es el síndrome donde volúmenes y CVF salen casi normales pero la DLCO está muy baja?",o:["NOC","Fibrosis + enfisema combinados","Sarcoidosis estadio I","NH aguda"],a:1,e:"En la fibrosis + enfisema combinados el enfisema compensa la restricción. La DLCO está muy baja y la HTP es frecuente."},
+{q:"¿Cuándo derivar a trasplante a un paciente con FPI (ISHLT 2021)?",o:["Solo cuando necesita O₂ en reposo","Desde el diagnóstico, cualquiera sea la función","Cuando la CVF baja de 30%","Nunca antes de los 70 años"],a:1,e:"La NIU o NINE fibrótica se deriva desde el diagnóstico. Enlistar tiene otros criterios (caída de CVF, DLCO, PM6M, HTP)."}
+];
+(function(){
+  const box=document.getElementById('quizBox');let answered=0,correct=0;
+  function upd(){document.getElementById('scoreTxt').textContent='Puntaje: '+correct+' / '+answered+' (de '+QUESTIONS.length+')';}
+  function render(){
+    box.innerHTML='';answered=0;correct=0;
+    QUESTIONS.forEach(function(item,qi){
+      const d=document.createElement('div');d.className='qq';
+      const s=document.createElement('div');s.className='stem';
+      const n=document.createElement('span');n.textContent=String(qi+1).padStart(2,'0');s.appendChild(n);
+      s.appendChild(document.createTextNode(item.q));d.appendChild(s);
+      const ex=document.createElement('div');ex.className='expl';ex.hidden=true;ex.textContent=item.e;
+      item.o.forEach(function(opt,oi){
+        const b=document.createElement('button');b.type='button';b.className='opt';b.textContent=opt;
+        b.addEventListener('click',function(){
+          if(d.dataset.done)return;d.dataset.done='1';answered++;
+          const bs=d.querySelectorAll('.opt');bs.forEach(function(x){x.disabled=true;});
+          bs[item.a].classList.add('ok');
+          if(oi===item.a)correct++;else b.classList.add('no');
+          ex.hidden=false;upd();
+        });
+        d.appendChild(b);
+      });
+      d.appendChild(ex);box.appendChild(d);
+    });
+    upd();
+  }
+  document.getElementById('resetBtn').addEventListener('click',function(){render();document.getElementById('quiz').scrollIntoView();});
+  render();
+})();
+</script>
